@@ -34,7 +34,5 @@ Fp& Fp::operator=(Fp&& other) noexcept{
 }
 
 void Fp::free() const{
-    if (value != nullptr){
-        bn_free(value);
-    }
+    if (value != nullptr) bn_free(value);
 }

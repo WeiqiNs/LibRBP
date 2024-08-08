@@ -1,18 +1,10 @@
 #include "field.hpp"
 
 Field::Field(const Fp& order){
-    set_order(order);
-}
-
-Field::Field(const int& order){
-    set_order(order);
-}
-
-void Field::set_order(const Fp& order){
     prime = order;
 }
 
-void Field::set_order(const int& order){
+Field::Field(const int& order){
     bn_set_dig(prime.value, order);
 }
 

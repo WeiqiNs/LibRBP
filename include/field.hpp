@@ -13,15 +13,9 @@ using IntMat = std::vector<IntVec>;
 
 class Field{
 public:
-    Field() = default;
-
     explicit Field(const Fp& order);
 
     explicit Field(const int& order);
-
-    void set_order(const Fp& order);
-
-    void set_order(const int& order);
 
     static bool cmp(const Fp& x, const Fp& y);
 

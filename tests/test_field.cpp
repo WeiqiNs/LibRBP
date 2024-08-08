@@ -1,11 +1,5 @@
 #include "field.hpp"
 
-bool test_set_order(Field Zp){
-    Zp.set_order(101);
-    const Fp x = Zp.from_int(100);
-    return Field::cmp(x, 100);
-}
-
 bool test_add(const Field& Zp){
     const Fp x = Zp.from_int(5);
     const Fp y = Zp.from_int(8);
@@ -176,7 +170,6 @@ int main(){
     const Field Zp(11);
 
     // Perform integer tests.
-    if (test_set_order(Zp) != true) return 1;
     if (test_add(Zp) != true) return 1;
     if (test_sub(Zp) != true) return 1;
     if (test_mul(Zp) != true) return 1;
