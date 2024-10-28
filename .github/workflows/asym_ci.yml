@@ -10,7 +10,7 @@ jobs:
       - name: Checkout RELIC
         uses: actions/checkout@v4
         with:
-          repository: '${{ github.relic-toolkit.relic }}'
+          repository: relic-toolkit/relic
           path: relic
 #
 #      - name: Set up CMake
