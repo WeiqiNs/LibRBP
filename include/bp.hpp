@@ -11,5 +11,7 @@ public:
 
     explicit BP(const bool& pre = true);
 
+    static void init();
+
     static void close();
 };

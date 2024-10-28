@@ -1,7 +1,10 @@
-#include <vector>
-#include "fp.hpp"
+#include "bp.hpp"
+#include <gtest/gtest.h>
 
-bool test_fp(){
+TEST(FieldTests, FieldPoint){
+    // Initialize the scheme.
+    BP::init();
+
     // Create a vector of length 10.
     std::vector<Fp> x;
     x.resize(10);
@@ -13,19 +16,8 @@ bool test_fp(){
     // Operator assignment.
     x[x.size() - 1] = y;
 
-    // Test assignment.
-    return bn_cmp_dig(x.back().value, 10) == RLC_EQ && bn_is_zero(x[0].value);
-}
-
-int main(){
-    // Initialize the relic core.
-    core_init();
-
-    // Perform tests.
-    if (test_fp() != true) return 1;
-
-    // Clean the relic core.
-    core_clean();
-
-    return 0;
+    // Test and then clear the core.
+    EXPECT_EQ(bn_cmp_dig(x.back().value, 10), RLC_EQ);
+    EXPECT_TRUE(bn_is_zero(x[0].value));
+    BP::close();
 }

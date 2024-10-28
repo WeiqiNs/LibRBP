@@ -1,7 +1,10 @@
-#include <vector>
-#include "gp.hpp"
+#include "bp.hpp"
+#include <gtest/gtest.h>
 
-bool test_g1(){
+TEST(GroupElementTests, G1Element){
+    // Initialize the scheme.
+    BP::init();
+
     // Create a vector of length 10.
     std::vector<G1> x;
     x.resize(10);
@@ -13,11 +16,16 @@ bool test_g1(){
     // Operator assignment.
     x[x.size() - 1] = y;
 
-    // Test assignment.
-    return g1_cmp(x.back().value, y.value) == RLC_EQ && g1_is_infty(x[0].value);
+    // Test and then clear the core.
+    EXPECT_EQ(g1_cmp(x.back().value, y.value), RLC_EQ);
+    EXPECT_TRUE(g1_is_infty(x[0].value));
+    BP::close();
 }
 
-bool test_g2(){
+TEST(GroupElementTests, G2Element){
+    // Initialize the scheme.
+    BP::init();
+
     // Create a vector of length 10.
     std::vector<G2> x;
     x.resize(10);
@@ -29,11 +37,16 @@ bool test_g2(){
     // Operator assignment.
     x[x.size() - 1] = y;
 
-    // Test assignment.
-    return g2_cmp(x.back().value, y.value) == RLC_EQ && g2_is_infty(x[0].value);
+    // Test and then clear the core.
+    EXPECT_EQ(g2_cmp(x.back().value, y.value), RLC_EQ);
+    EXPECT_TRUE(g2_is_infty(x[0].value));
+    BP::close();
 }
 
-bool test_gt(){
+TEST(GroupElementTests, GtElement){
+    // Initialize the scheme.
+    BP::init();
+
     // Create a vector of length 10.
     std::vector<Gt> x;
     x.resize(10);
@@ -45,22 +58,8 @@ bool test_gt(){
     // Operator assignment.
     x[x.size() - 1] = y;
 
-    // Test assignment.
-    return gt_cmp(x.back().value, y.value) == RLC_EQ && gt_is_unity(x[0].value);
-}
-
-int main(){
-    // Initialize the relic core.
-    core_init();
-    pc_param_set_any();
-
-    // Perform tests.
-    if (test_g1() != true) return 1;
-    if (test_g2() != true) return 1;
-    if (test_gt() != true) return 1;
-
-    // Clean the relic core.
-    core_clean();
-
-    return 0;
+    // Test and then clear the core.
+    EXPECT_EQ(gt_cmp(x.back().value, y.value), RLC_EQ);
+    EXPECT_TRUE(gt_is_unity(x[0].value));
+    BP::close();
 }
