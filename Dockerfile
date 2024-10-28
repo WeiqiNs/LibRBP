@@ -26,7 +26,6 @@ WORKDIR "/home/project/build"
 RUN cmake ..
 RUN make
 
-# Execute the test.
 RUN ctest
 
 RUN make install
