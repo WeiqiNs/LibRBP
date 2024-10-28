@@ -1,0 +1,32 @@
+name: Asymmetric Curve CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout RELIC
+        uses: actions/checkout@v4
+        with:
+          repository: '${{ github.relic-toolkit.relic }}'
+          path: relic
+#
+#      - name: Set up CMake
+#        uses: jwlawson/actions-setup-cmake@v1  # Set up CMake
+#        with:
+#          cmake-version: '3.21.0'  # Specify the desired CMake version
+#
+#      - name: Create build directory
+#        run: mkdir build && cd build && cmake ..
+#
+#      - name: Build the project
+#        run: |
+#          cd build
+#          cmake --build .  # Build the project
+#
+#      - name: Run tests
+#        run: |
+#          cd build
+#          ctest --output-on-failure  # Run tests and show output on failure
