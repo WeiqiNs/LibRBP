@@ -4,7 +4,6 @@ project(RBPTest)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(RELIC REQUIRED)
 find_package(RBP REQUIRED)
 
 add_executable(demo demo.cpp)

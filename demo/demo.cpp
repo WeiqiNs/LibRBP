@@ -15,9 +15,12 @@ int main(){
     const auto g2x = Bp.Gp->g2_raise(x);
     const auto g2y = Bp.Gp->g2_raise(y);
 
-    const bool r = Group::cmp_gt(Group::pair(g1x, g2y), Group::pair(g1y, g2x));
+    if (Group::cmp_gt(Group::pair(g1x, g2y), Group::pair(g1y, g2x))){
+        std::cout << "Pairing successful!" << std::endl;
+    } else{
+        std::cout << "Pairing failed!" << std::endl;
+    }
 
     BP::close();
-
     return 0;
 }

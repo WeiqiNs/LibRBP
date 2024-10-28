@@ -13,7 +13,7 @@ target_include_directories(BP_LIB PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(BP_LIB PUBLIC ${RELIC_LIB} m)
+target_link_libraries(BP_LIB PUBLIC ${RLC_LIBRARY})
 
 # Add this line to ensure RELIC's include directories are correctly passed
 target_include_directories(BP_LIB PUBLIC ${RELIC_INCLUDE_DIRS})
