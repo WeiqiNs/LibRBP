@@ -1,7 +1,7 @@
 #include "bp.hpp"
 #include <gtest/gtest.h>
 
-TEST(BPTest, PairingTest) {
+TEST(RBPTests, Pairing){
     const auto Bp = BP();
 
     const auto x = Bp.Zp->rand_vec(10);
@@ -14,7 +14,7 @@ TEST(BPTest, PairingTest) {
     const auto g2y = Bp.Gp->g2_raise(y);
 
     const bool r = Group::cmp_gt(Group::pair(g1x, g2y), Group::pair(g1y, g2x));
-    BP::close();
 
+    BP::close();
     EXPECT_TRUE(r);
 }

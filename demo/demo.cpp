@@ -2,7 +2,7 @@
 #include <RBP/bp.hpp>
 
 int main(){
-    std::cout << "Testing RBP library..." << std::endl;
+    std::cout << "Testing import the RBP library..." << std::endl;
 
     const auto Bp = BP();
 

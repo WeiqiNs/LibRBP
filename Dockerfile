@@ -3,7 +3,7 @@ FROM ubuntu:latest
 # Update libraries.
 RUN apt update && apt upgrade -y
 # Install needed libraries.
-RUN apt install -y git build-essential libgmp-dev libmpfr-dev libssl-dev gdb cmake
+RUN apt install -y git build-essential libgmp-dev libmpfr-dev libssl-dev libgtest-dev gdb cmake
 # Clean up.
 RUN apt clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -26,6 +26,17 @@ WORKDIR "/home/project/build"
 RUN cmake ..
 RUN make
 
+# Run all tests.
 RUN ctest
 
+# Install the project.
 RUN make install
+
+# Build the demo to make sure it works.
+RUN mkdir -p /home/project/demo/build
+WORKDIR "/home/project/demo/build"
+RUN cmake ..
+RUN make
+
+# Run the demo and keep container running.
+CMD ["/bin/sh", "-c", "./demo && tail -f /dev/null"]

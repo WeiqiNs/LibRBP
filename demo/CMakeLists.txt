@@ -4,11 +4,11 @@ project(RBPTest)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Find the RBP library.
 find_package(RBP REQUIRED)
 
+# Create an executable.
 add_executable(demo demo.cpp)
 
+# Link the executable with the library.
 target_link_libraries(demo PUBLIC RBP::BP_LIB)
-
-message(STATUS "RBP_INCLUDE_DIRS: ${RBP_INCLUDE_DIRS}")
-message(STATUS "RBP_LIBRARIES: ${RBP_LIBRARIES}")
