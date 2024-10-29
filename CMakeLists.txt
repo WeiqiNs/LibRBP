@@ -13,6 +13,9 @@ project(
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Let IDE know we are using folders.
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # Include desired modules.
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
