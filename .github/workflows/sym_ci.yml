@@ -1,4 +1,4 @@
-name: Asymmetric Curve CI
+name: Symmetric Curve CI
 
 on: [push, pull_request]
 
@@ -18,7 +18,7 @@ jobs:
           repository: relic-toolkit/relic
           path: relic
 
-      - name: Install RELIC asymmetric curve
+      - name: Install RELIC symmetric curve
         run: |
           mkdir relic/build
           cd relic/build
@@ -29,7 +29,7 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v4
 
-      - name: Install project
+      - name: Build and install project
         run: |
           mkdir build
           cd build

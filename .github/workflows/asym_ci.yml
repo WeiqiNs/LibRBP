@@ -29,7 +29,7 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v4
 
-      - name: Install project
+      - name: Build and install project
         run: |
           mkdir build
           cd build
