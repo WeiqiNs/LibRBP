@@ -1,5 +1,5 @@
 #include <iostream>
-#include <LibRBP/bp.hpp>
+#include <RBP/bp.hpp>
 
 int main(){
     std::cout << "Testing import the RBP library..." << std::endl;
