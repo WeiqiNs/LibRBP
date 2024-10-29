@@ -22,7 +22,7 @@ jobs:
         run: |
           mkdir relic/build
           cd relic/build
-          ../preset/gmp-pbc-bls381.sh ..
+          ../preset/gmp-pbc-ss1536.sh ..
           sudo make
           sudo make install
 
