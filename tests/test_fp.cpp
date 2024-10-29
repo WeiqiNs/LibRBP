@@ -1,5 +1,5 @@
-#include "bp.hpp"
 #include <gtest/gtest.h>
+#include "bp.hpp"
 
 TEST(FieldTests, FieldPoint){
     // Initialize the scheme.

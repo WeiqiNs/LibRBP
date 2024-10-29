@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 
 # Project name and language.
 project(
-        RBP
+        LibRBP
         VERSION 0.1
         LANGUAGES CXX
         DESCRIPTION "This library implements a bilinear pairing group using the RELIC library."
@@ -42,8 +42,8 @@ add_subdirectory(src)
 add_subdirectory(tests)
 
 # Install targets and files.
-install(TARGETS BP_LIB
-        EXPORT RBPTargets
+install(TARGETS LibRBP
+        EXPORT LibRBPTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -51,31 +51,31 @@ install(TARGETS BP_LIB
 
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/RBP)
 
-install(EXPORT RBPTargets
-        FILE RBPTargets.cmake
-        NAMESPACE RBP::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RBP)
+install(EXPORT LibRBPTargets
+        FILE LibRBPTargets.cmake
+        NAMESPACE LibRBP::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/LibRBP)
 
 # Install the configuration file.
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/RBPConfig.cmake.in
-        "${CMAKE_CURRENT_BINARY_DIR}/RBPConfig.cmake"
-        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RBP)
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/LibRBPConfig.cmake.in
+        "${CMAKE_CURRENT_BINARY_DIR}/LibRBPConfig.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/LibRBP)
 
 write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/RBPConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/LibRBPConfigVersion.cmake"
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY SameMajorVersion)
 
 install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/RBPConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/RBPConfigVersion.cmake"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RBP)
+        "${CMAKE_CURRENT_BINARY_DIR}/LibRBPConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/LibRBPConfigVersion.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/LibRBP)
 
 # Install the dependency file.
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/RBPDependencies.cmake.in
-        "${CMAKE_CURRENT_BINARY_DIR}/RBPDependencies.cmake"
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/LibRBPDependencies.cmake.in
+        "${CMAKE_CURRENT_BINARY_DIR}/LibRBPDependencies.cmake"
         @ONLY)
 
 install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/RBPDependencies.cmake"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RBP)
+        "${CMAKE_CURRENT_BINARY_DIR}/LibRBPDependencies.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/LibRBP)

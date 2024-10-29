@@ -1,0 +1,9 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(RELIC REQUIRED)
+link_libraries(${RLC_LIBRARY})
+
+include("${CMAKE_CURRENT_LIST_DIR}/LibRBPTargets.cmake")
+
+check_required_components(LibRBP)
