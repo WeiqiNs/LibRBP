@@ -7,6 +7,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt update && apt upgrade -y
+          sudo apt install -y git build-essential libgmp-dev libmpfr-dev libssl-dev libgtest-dev gdb cmake
+
       - name: Checkout RELIC
         uses: actions/checkout@v4
         with:
@@ -18,8 +23,8 @@ jobs:
           mkdir relic/build
           cd relic/build
           ../preset/gmp-pbc-bls381.sh ..
-          make
-          make install
+          sudo make
+          sudo make install
 
 #
 #      - name: Set up CMake
