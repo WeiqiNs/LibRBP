@@ -5,25 +5,27 @@
 
 class Fp{
 public:
+    /// Object to hold the actual point value.
     bn_t value;
 
-    // Default constructor.
+    /// Default constructor.
     Fp();
 
-    // Copy constructor.
+    /// Copy constructor.
     Fp(const Fp& other);
 
-    // Move constructor.
+    /// Move constructor.
     Fp(Fp&& other) noexcept;
 
-    // Destructor.
+    /// Destructor.
     ~Fp();
 
-    // Copy assignment operator.
+    /// Copy assignment operator.
     Fp& operator=(const Fp& other);
 
-    // Move assignment operator.
+    /// Move assignment operator.
     Fp& operator=(Fp&& other) noexcept;
 
+    /// Clear the point object.
     void free() const;
 };
