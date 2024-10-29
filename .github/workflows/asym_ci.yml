@@ -11,8 +11,8 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          sudo apt update
-          sudo apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev libgtest-dev cmake
+          apt update
+          apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev libgtest-dev cmake
 
       - name: Checkout RELIC
         uses: actions/checkout@v4
@@ -25,8 +25,8 @@ jobs:
           mkdir relic/build
           cd relic/build
           ../preset/gmp-pbc-bls381.sh ..
-          sudo make
-          sudo make install
+          make
+          make install
 
       - name: Checkout main repository
         uses: actions/checkout@v4
@@ -36,8 +36,8 @@ jobs:
           mkdir build
           cd build
           cmake ..
-          sudo make
-          sudo make install
+          make
+          make install
 
   test:
     runs-on: ubuntu-latest
