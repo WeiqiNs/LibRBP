@@ -29,7 +29,7 @@ if(NOT GTest_FOUND)
         include(FetchContent)
         FetchContent_Declare(
                 googletest
-                URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+                URL https://github.com/google/googletest/archive/5ed21863955149a5a877a53d7d5045b6919090ed.zip
                 DOWNLOAD_EXTRACT_TIMESTAMP TRUE
         )
         # For Windows: Prevent overriding the parent project's compiler/linker settings
