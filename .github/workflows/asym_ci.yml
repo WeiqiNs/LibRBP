@@ -3,10 +3,11 @@ name: Asymmetric Curve CI
 on: [push, pull_request]
 
 jobs:
+  # build and install the project.
   build:
     runs-on: ubuntu-latest
     container:
-      image: gcc:latest
+      image: ubuntu:latest
 
     steps:
       - name: Install dependencies
@@ -39,11 +40,12 @@ jobs:
           make
           make install
 
+  # if build is successful, perform testing.
   test:
     runs-on: ubuntu-latest
     needs: build
     container:
-      image: gcc:latest
+      image: ubuntu:latest
 
     steps:
       - name: Run tests
