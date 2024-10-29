@@ -2,7 +2,7 @@
 
 include(CMakeFindDependencyMacro)
 find_dependency(RELIC REQUIRED)
-link_libraries(${RELIC_LIB})
+link_libraries(${RLC_LIBRARY})
 
 include("${CMAKE_CURRENT_LIST_DIR}/RBPTargets.cmake")
 

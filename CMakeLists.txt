@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 
 # Project name and language.
 project(
-        RBP
+        LibRBP
         VERSION 0.1
         LANGUAGES CXX
         DESCRIPTION "This library implements a bilinear pairing group using the RELIC library."
@@ -29,7 +29,7 @@ if(NOT GTest_FOUND)
         include(FetchContent)
         FetchContent_Declare(
                 googletest
-                URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+                URL https://github.com/google/googletest/archive/5ed21863955149a5a877a53d7d5045b6919090ed.zip
                 DOWNLOAD_EXTRACT_TIMESTAMP TRUE
         )
         # For Windows: Prevent overriding the parent project's compiler/linker settings
@@ -42,7 +42,7 @@ add_subdirectory(src)
 add_subdirectory(tests)
 
 # Install targets and files.
-install(TARGETS BP_LIB
+install(TARGETS RBP
         EXPORT RBPTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
