@@ -7,10 +7,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y git build-essential libgmp-dev libmpfr-dev libssl-dev libgtest-dev gdb cmake
+          sudo apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev libgtest-dev cmake
 
       - name: Checkout RELIC
         uses: actions/checkout@v4
@@ -18,7 +18,7 @@ jobs:
           repository: relic-toolkit/relic
           path: relic
 
-      - name: Install RELIC Asymmetric Curve
+      - name: Install RELIC asymmetric curve
         run: |
           mkdir relic/build
           cd relic/build
@@ -26,21 +26,18 @@ jobs:
           sudo make
           sudo make install
 
-#
-#      - name: Set up CMake
-#        uses: jwlawson/actions-setup-cmake@v1  # Set up CMake
-#        with:
-#          cmake-version: '3.21.0'  # Specify the desired CMake version
-#
-#      - name: Create build directory
-#        run: mkdir build && cd build && cmake ..
-#
-#      - name: Build the project
-#        run: |
-#          cd build
-#          cmake --build .  # Build the project
-#
-#      - name: Run tests
-#        run: |
-#          cd build
-#          ctest --output-on-failure  # Run tests and show output on failure
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+
+      - name: Install project
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          sudo make
+          sudo make install
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest
