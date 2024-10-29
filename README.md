@@ -1,5 +1,5 @@
 # RELIC based Bilinear Pairing Library (RBP)
-[![Asymmetric Curve CI](https://github.com/Weiqi97/RBP/actions/workflows/asym_ci.yml/badge.svg)](https://github.com/Weiqi97/RBP/actions/workflows/asym_ci.yml) [![Symmetric Curve CI](https://github.com/Weiqi97/RBP/actions/workflows/sym_ci.yml/badge.svg)](https://github.com/Weiqi97/RBP/actions/workflows/sym_ci.yml)
+[![LibRBP CI](https://github.com/Weiqi97/LibRBP/actions/workflows/ci.yml/badge.svg)](https://github.com/Weiqi97/LibRBP/actions/workflows/ci.yml)
 
 LibRBP is a wrapper designed for constructing bilinear pairing groups using the [RELIC](https://github.com/relic-toolkit/relic) library. It offers a set of slightly simplified APIs to facilitate the implementation and prototyping of pairing-based cryptographic schemes, leveraging the capabilities of the RELIC library.
 
