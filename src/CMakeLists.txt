@@ -2,7 +2,7 @@
 file(GLOB SOURCE_LIST CONFIGURE_DEPENDS "${RBP_SOURCE_DIR}/src/*.cpp")
 
 # Make an automatic library - will be static or dynamic based on user setting.
-add_library(BP_LIB STATIC ${SOURCE_LIST})
+add_library(BP_LIB ${SOURCE_LIST})
 
 # Add this line:
 add_library(RBP::BP_LIB ALIAS BP_LIB)
