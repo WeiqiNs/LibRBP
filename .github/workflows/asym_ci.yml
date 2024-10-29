@@ -12,6 +12,15 @@ jobs:
         with:
           repository: relic-toolkit/relic
           path: relic
+
+      - name: Install RELIC Asymmetric Curve
+        run: |
+          mkdir relic/build
+          cd relic/build
+          ../preset/gmp-pbc-bls381.sh ..
+          make
+          make install
+
 #
 #      - name: Set up CMake
 #        uses: jwlawson/actions-setup-cmake@v1  # Set up CMake
