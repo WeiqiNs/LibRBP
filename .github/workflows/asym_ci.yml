@@ -3,17 +3,14 @@ name: Asymmetric Curve CI
 on: [push, pull_request]
 
 jobs:
-  # build and install the project.
-  build:
+  build_and_test:
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:latest
 
     steps:
       - name: Install dependencies
         run: |
-          apt update
-          apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev libgtest-dev cmake
+          sudo apt update
+          sudo apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev libgtest-dev cmake
 
       - name: Checkout RELIC
         uses: actions/checkout@v4
@@ -26,8 +23,8 @@ jobs:
           mkdir relic/build
           cd relic/build
           ../preset/gmp-pbc-bls381.sh ..
-          make
-          make install
+          sudo make
+          sudo make install
 
       - name: Checkout main repository
         uses: actions/checkout@v4
@@ -37,20 +34,17 @@ jobs:
           mkdir build
           cd build
           cmake ..
-          make
-          make install
+          sudo make
+          sudo make install
 
-  # if build is successful, perform testing.
-  test:
-    needs: build
-
-    runs-on: ubuntu-latest
-
-    container:
-      image: ubuntu:latest
-
-    steps:
       - name: Run tests
         run: |
           cd build
           ctest
+
+      - name: Build demo
+        run: |
+          mkdir demo/build
+          cd demo/build
+          cmake ..
+          sudo make
