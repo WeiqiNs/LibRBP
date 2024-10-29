@@ -42,8 +42,10 @@ jobs:
 
   # if build is successful, perform testing.
   test:
-    runs-on: ubuntu-latest
     needs: build
+
+    runs-on: ubuntu-latest
+
     container:
       image: ubuntu:latest
 
