@@ -94,7 +94,7 @@ public:
     /// Find <x,y>.
     [[nodiscard]] Fp vec_ip(const FpVec& x, const FpVec& y) const;
 
-    /// Interpolate the polynomial given roots and degree.
+    /// Interpolate the polynomial given roots and degree, the coefficients are returned in format c + a0 + a1 + ...
     [[nodiscard]] FpVec poly_interpolate(const int& degree, const FpVec& roots) const;
 
     /// Determine if a matrix is the identity matrix.
