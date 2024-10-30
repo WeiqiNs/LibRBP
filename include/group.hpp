@@ -24,6 +24,13 @@ public:
     static bool cmp_gt(const Gt& x, const Gt& y);
 
     /**
+     * Check if an element in Gt is the unity, i.e. 0.
+     * @param x an element in Gt.
+     * @return a boolean indicating whether the input element is the unity.
+     */
+    static bool check_gt_unity(const Gt& x);
+
+    /**
      * Perform pairing on group elements.
      * @param x an element in G1.
      * @param y an element in G2.

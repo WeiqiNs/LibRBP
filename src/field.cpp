@@ -85,6 +85,10 @@ Fp Field::inv(const Fp& x) const{
     return r;
 }
 
+void Field::mod(FpVec& x) const{
+    for (auto i : x) mod(i);
+}
+
 FpVec Field::vec_join(const FpVec& x, const FpVec& y){
     FpVec r;
     for (const auto& i : x) r.push_back(i);

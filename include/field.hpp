@@ -64,6 +64,9 @@ public:
     /// Find x^(-1).
     [[nodiscard]] Fp inv(const Fp& x) const;
 
+    /// Mod vector with the order of the group.
+    void mod(FpVec& x) const;
+
     /// Find x||y.
     static FpVec vec_join(const FpVec& x, const FpVec& y);
 

@@ -26,6 +26,10 @@ bool Group::cmp_gt(const Gt& x, const Gt& y){
     return gt_cmp(x.value, y.value) == RLC_EQ;
 }
 
+bool Group::check_gt_unity(const Gt& x){
+    return gt_is_unity(x.value);
+}
+
 Gt Group::pair(const G1& x, const G2& y){
     Gt r;
     pc_map(r.value, x.value, y.value);
