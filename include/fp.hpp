@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+#include <vector>
 #include "gmp.h"
 #include "relic/relic.h"
 
@@ -10,6 +12,15 @@ public:
 
     /// Default constructor.
     Fp();
+
+    /// Constructor with input integer x.
+    explicit Fp(int x);
+
+    /// Constructor with input string x, base 10, say "123".
+    explicit Fp(const std::string& x);
+
+    /// Constructor with input unsigned hex characters, say "0x12", this is in "big endian" format.
+    explicit Fp(const std::vector<unsigned char>& x);
 
     /// Copy constructor.
     Fp(const Fp& other);
