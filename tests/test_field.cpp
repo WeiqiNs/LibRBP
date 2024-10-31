@@ -1,6 +1,21 @@
 #include <gtest/gtest.h>
 #include "bp.hpp"
 
+TEST(FieldElementTests, FromInt){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create a field.
+    const Field Zp(11);
+
+    // Perform testing.
+    const Fp x = Zp.from_int(-17);
+
+    // Test and then clear the core.
+    EXPECT_TRUE(Field::cmp(x, 5));
+    BP::close();
+}
+
 TEST(FieldElementTests, Add){
     // Initialize the scheme.
     BP::init();

@@ -21,3 +21,42 @@ TEST(FieldTests, FieldPoint){
     EXPECT_TRUE(bn_is_zero(x[0].value));
     BP::close();
 }
+
+TEST(FieldTests, InitInt){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create a vector of length 10.
+    const Fp x(11);
+
+    // Test and then clear the core.
+    EXPECT_TRUE(Field::cmp(x, 11));
+    BP::close();
+}
+
+TEST(FieldTests, InitStr){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create a vector of length 10.
+    const Fp x("100");
+
+    // Test and then clear the core.
+    EXPECT_TRUE(Field::cmp(x, 100));
+    BP::close();
+}
+
+TEST(FieldTests, InitChar){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create a vector of unsigned char.
+    const std::vector<unsigned char> x_vec = {0x12, 0x34};
+
+    // Create a vector of length 10.
+    const Fp x(x_vec);
+
+    // Test and then clear the core.
+    EXPECT_TRUE(Field::cmp(x, 4660));
+    BP::close();
+}

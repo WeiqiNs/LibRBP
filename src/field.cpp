@@ -34,8 +34,17 @@ void Field::mod(Fp& x) const{
 
 Fp Field::from_int(const int& x) const{
     Fp r;
-    bn_set_dig(r.value, x);
-    mod(r);
+
+    // Check if the input integer is negative.
+    if (x >= 0){
+        bn_set_dig(r.value, x);
+        mod(r);
+    } else{
+        bn_set_dig(r.value, -x);
+        mod(r);
+        r = neg(r);
+    }
+
     return r;
 }
 
@@ -83,6 +92,10 @@ Fp Field::inv(const Fp& x) const{
     Fp r;
     bn_mod_inv(r.value, x.value, prime.value);
     return r;
+}
+
+void Field::mod(FpVec& x) const{
+    for (auto i : x) mod(i);
 }
 
 FpVec Field::vec_join(const FpVec& x, const FpVec& y){

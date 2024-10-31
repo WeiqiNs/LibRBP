@@ -6,6 +6,24 @@ Fp::Fp(){
     bn_zero(value);
 }
 
+Fp::Fp(const int x){
+    bn_new(value);
+    bn_null(value);
+    bn_set_dig(value, x);
+}
+
+Fp::Fp(const std::string& x){
+    bn_new(value);
+    bn_null(value);
+    bn_read_str(value, x.data(), x.size(), 10);
+}
+
+Fp::Fp(const std::vector<unsigned char>& x){
+    bn_new(value);
+    bn_null(value);
+    bn_read_bin(value, x.data(), x.size());
+}
+
 Fp::Fp(const Fp& other){
     bn_new(value);
     bn_copy(value, other.value);

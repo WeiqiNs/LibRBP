@@ -13,30 +13,20 @@ RUN git clone https://github.com/relic-toolkit/relic.git
 ## Relic library installation.
 RUN mkdir /relic/build
 WORKDIR "/relic/build"
-RUN ../preset/gmp-pbc-bls381.sh ../ && \
-    make && \
-    make install
+RUN ../preset/gmp-pbc-bls381.sh .. && make && make install
 
 # Copy the files over to working directory.
-RUN mkdir -p /home/project/build
-COPY . /home/project
+RUN mkdir -p /home/LibRBP/build
+COPY . /home/LibRBP
 
-# Build the project.
-WORKDIR "/home/project/build"
-RUN cmake ..
-RUN make
-
-# Run all tests.
-RUN ctest
-
-# Install the project.
-RUN make install
+# Build the project, run tests and install.
+WORKDIR "/home/LibRBP/build"
+RUN cmake .. && make && ctest && make install
 
 # Build the demo to make sure it works.
-RUN mkdir -p /home/project/demo/build
-WORKDIR "/home/project/demo/build"
-RUN cmake ..
-RUN make
+RUN mkdir -p /home/LibRBP/demo/build
+WORKDIR "/home/LibRBP/demo/build"
+RUN cmake .. && make
 
 # Run the demo and keep container running.
 CMD ["/bin/sh", "-c", "./demo && tail -f /dev/null"]
