@@ -34,8 +34,17 @@ void Field::mod(Fp& x) const{
 
 Fp Field::from_int(const int& x) const{
     Fp r;
-    bn_set_dig(r.value, x);
-    mod(r);
+
+    // Check if the input integer is negative.
+    if (x >= 0){
+        bn_set_dig(r.value, x);
+        mod(r);
+    } else{
+        bn_set_dig(r.value, -x);
+        mod(r);
+        r = neg(r);
+    }
+
     return r;
 }
 
