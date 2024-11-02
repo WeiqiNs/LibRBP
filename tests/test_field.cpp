@@ -260,6 +260,27 @@ TEST(FieldElementTests, VecPolyInterpolate){
     BP::close();
 }
 
+TEST(FieldElementTests, VecPolyInterpolateZero){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create a field.
+    const Field Zp(11);
+
+    // Perform testing.
+    const FpVec x = Zp.from_int(IntVec{0});
+    const FpVec r = Zp.poly_interpolate(10, x);
+
+    // Test and then clear the core.
+    EXPECT_TRUE(
+        r.size() == 11 &&
+        Field::cmp(r[0], 0) &&
+        Field::cmp(r[1], 0) &&
+        Field::cmp(r[2], 0)
+    );
+    BP::close();
+}
+
 TEST(FieldElementTests, MatId){
     // Initialize the scheme.
     BP::init();
