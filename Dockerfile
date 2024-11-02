@@ -16,16 +16,16 @@ WORKDIR "/relic/build"
 RUN ../preset/gmp-pbc-bls381.sh .. && make && make install
 
 # Copy the files over to working directory.
-RUN mkdir -p /home/LibRBP/build
-COPY . /home/LibRBP
+RUN mkdir -p /LibRBP/build
+COPY . /LibRBP
 
 # Build the project, run tests and install.
-WORKDIR "/home/LibRBP/build"
+WORKDIR "/LibRBP/build"
 RUN cmake .. && make && ctest && make install
 
 # Build the demo to make sure it works.
-RUN mkdir -p /home/LibRBP/demo/build
-WORKDIR "/home/LibRBP/demo/build"
+RUN mkdir -p /LibRBP/demo/build
+WORKDIR "/LibRBP/demo/build"
 RUN cmake .. && make
 
 # Run the demo and keep container running.
