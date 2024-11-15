@@ -1,7 +1,7 @@
 # RELIC based Bilinear Pairing Library (LibRBP)
 [![LibRBP CI](https://github.com/Weiqi97/LibRBP/actions/workflows/ci.yml/badge.svg)](https://github.com/Weiqi97/LibRBP/actions/workflows/ci.yml)
 
-LibRBP is a wrapper designed for constructing bilinear pairing groups using the [RELIC](https://github.com/relic-toolkit/relic) library. It offers a set of slightly simplified APIs to facilitate the implementation and prototyping of pairing-based cryptographic schemes, leveraging the capabilities of the RELIC library.
+LibRBP is a wrapper designed for constructing bilinear pairing groups using the [RELIC](https://github.com/relic-toolkit/relic) library. It offers a set of convenient APIs to facilitate the implementation and prototyping of pairing-based cryptographic schemes, leveraging the capabilities of the RELIC library.
 
 To build and install this library, you must first install RELIC and its dependencies. For a detailed installation guide, please refer to their [wiki page](https://github.com/relic-toolkit/relic/wiki/Building). Once RELIC is installed and configured with the desired curve, you can simply run the following command in the root directory of this project:
 ```bash
