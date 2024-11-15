@@ -16,6 +16,6 @@ ctest
 # Optionally, you could choose to install this library to the default path.
 make install
 ```
-You could also refer to the [Dockerfile](Dockerfile) for detailed steps on setting up the environment. You could also just use that file and build a docker image as your development environment.
+You can refer to the [Dockerfile](Dockerfile) for detailed steps on setting up the environment or just build a docker image as your development environment.
 
 A simple example of how to include and use this library is provided in the [demo](demo) folder.
