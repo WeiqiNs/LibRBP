@@ -39,7 +39,7 @@ endif()
 
 # Add desired subdirectories.
 add_subdirectory(src)
-add_subdirectory(tests)
+add_subdirectory(test)
 
 # Install targets and files.
 install(TARGETS RBP

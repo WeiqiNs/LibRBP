@@ -217,6 +217,10 @@ FpVec Field::poly_interpolate(const int& degree, const FpVec& roots) const{
     return coeff;
 }
 
+void Field::mod(FpMat& x) const{
+    for (auto& i : x) mod(i);
+}
+
 bool Field::mat_is_id(const FpMat& x){
     const auto size = x.size();
 

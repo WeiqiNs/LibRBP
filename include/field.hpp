@@ -97,6 +97,9 @@ public:
     /// Interpolate the polynomial given roots and degree, the coefficients are returned in format c + a0 + a1 + ...
     [[nodiscard]] FpVec poly_interpolate(const int& degree, const FpVec& roots) const;
 
+    /// Mod matrix with the order of the group.
+    void mod(FpMat& x) const;
+
     /// Determine if a matrix is the identity matrix.
     static bool mat_is_id(const FpMat& x);
 
