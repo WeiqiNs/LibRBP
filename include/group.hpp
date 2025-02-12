@@ -36,7 +36,7 @@ public:
      * @param y an element in G2.
      * @return an element in Gt.
      */
-    static Gt pair(const G1& x, const G2& y);
+    [[nodiscard]] static Gt pair(const G1& x, const G2& y);
 
     /**
      * Perform pairing on vectors of group elements and find their products.
@@ -44,7 +44,22 @@ public:
      * @param y a vector of elements in G2.
      * @return an element in Gt.
      */
-    static Gt pair(const G1Vec& x, const G2Vec& y);
+    [[nodiscard]] static Gt pair(const G1Vec& x, const G2Vec& y);
+    
+    /**
+     * 
+     * @param x 
+     * @return 
+     */
+    [[nodiscard]] static G1 g1_add_vec(const G1Vec& x);
+
+    /**
+     * 
+     * @param x 
+     * @return 
+     */
+    [[nodiscard]] static G2 g2_add_vec(const G2Vec& x);
+    
 
     /**
      * Raise the generator G1 to some Zp value.

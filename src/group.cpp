@@ -56,6 +56,22 @@ Gt Group::pair(const G1Vec& x, const G2Vec& y){
     return r;
 }
 
+G1 Group::g1_add_vec(const G1Vec& x){
+    G1 r = x[0];
+
+    for (int i = 1; i < x.size(); ++i) g1_add(r.value, r.value, x[i].value);
+
+    return r;
+}
+
+G2 Group::g2_add_vec(const G2Vec& x){
+    G2 r = x[0];
+
+    for (int i = 1; i < x.size(); ++i) g2_add(r.value, r.value, x[i].value);
+
+    return r;
+}
+
 G1 Group::g1_raise(const Fp& x) const{
     G1 r;
 
@@ -77,7 +93,7 @@ G2 Group::g2_raise(const Fp& x) const{
 G1Vec Group::g1_raise(const FpVec& x) const{
     G1Vec r;
 
-    for (const auto & i : x) r.push_back(g1_raise(i));
+    for (const auto& i : x) r.push_back(g1_raise(i));
 
     return r;
 }
@@ -85,7 +101,7 @@ G1Vec Group::g1_raise(const FpVec& x) const{
 G2Vec Group::g2_raise(const FpVec& x) const{
     G2Vec r;
 
-    for (const auto & i : x) r.push_back(g2_raise(i));
+    for (const auto& i : x) r.push_back(g2_raise(i));
 
     return r;
 }

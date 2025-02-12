@@ -1,6 +1,46 @@
 #include <gtest/gtest.h>
 #include "bp.hpp"
 
+TEST(GroupTests, G1Add){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create a field.
+    const Field Zp(101);
+
+    // Set testing points.
+    const FpVec x = Zp.from_int(IntVec{1, 2, 3, 4, 5});
+    const Fp y(15);
+
+    // Test add.
+    const auto gp = Group();
+    const auto r1 = Group::g1_add_vec(gp.g1_raise(x));
+    const auto r2 = gp.g1_raise(y);
+
+    EXPECT_EQ(g1_cmp(r1.value, r2.value), RLC_EQ);
+    BP::close();
+}
+
+TEST(GroupTests, G2Add){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create a field.
+    const Field Zp(101);
+
+    // Set testing points.
+    const FpVec x = Zp.from_int(IntVec{2, 3, 4, 5, 6});
+    const Fp y(20);
+
+    // Test add.
+    const auto gp = Group();
+    const auto r1 = Group::g2_add_vec(gp.g2_raise(x));
+    const auto r2 = gp.g2_raise(y);
+
+    EXPECT_EQ(g2_cmp(r1.value, r2.value), RLC_EQ);
+    BP::close();
+}
+
 TEST(GroupTests, Pairing){
     // Initialize the scheme.
     BP::init();

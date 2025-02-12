@@ -26,7 +26,7 @@ TEST(FieldTests, InitInt){
     // Initialize the scheme.
     BP::init();
 
-    // Create a vector of length 10.
+    // Create from integer.
     const Fp x(11);
 
     // Test and then clear the core.
@@ -38,7 +38,7 @@ TEST(FieldTests, InitStr){
     // Initialize the scheme.
     BP::init();
 
-    // Create a vector of length 10.
+    // Create from string.
     const Fp x("100");
 
     // Test and then clear the core.
@@ -53,7 +53,7 @@ TEST(FieldTests, InitChar){
     // Create a vector of unsigned char.
     const std::vector<unsigned char> x_vec = {0x12, 0x34};
 
-    // Create a vector of length 10.
+    // Create from chars.
     const Fp x(x_vec);
 
     // Test and then clear the core.
