@@ -1,6 +1,72 @@
 #include <gtest/gtest.h>
 #include "bp.hpp"
 
+TEST(GroupTests, G1Load){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create the group.
+    const auto gp = Group();
+
+    // Create a random g1, dump and load g1.
+    G1 x;
+    g1_rand(x.value);
+    const G1 y = gp.g1_load(gp.g1_dump(x));
+
+    EXPECT_EQ(g1_cmp(x.value, y.value), RLC_EQ);
+    BP::close();
+}
+
+TEST(GroupTests, G1LoadVec){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create the group.
+    const auto gp = Group();
+
+    // Create a vector of random g1, dump and load the vector.
+    G1Vec x(5);
+    for (auto& i : x){ g1_rand(i.value); }
+    const G1Vec y = gp.g1_load(gp.g1_dump(x));
+
+    for (int i = 0; i < x.size(); ++i)
+        EXPECT_EQ(g1_cmp(x[i].value, y[i].value), RLC_EQ);
+    BP::close();
+}
+
+TEST(GroupTests, G2Load){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create the group.
+    const auto gp = Group();
+
+    // Create a random g2, dump and load g2.
+    G2 x;
+    g2_rand(x.value);
+    const G2 y = gp.g2_load(gp.g2_dump(x));
+
+    EXPECT_EQ(g2_cmp(x.value, y.value), RLC_EQ);
+    BP::close();
+}
+
+TEST(GroupTests, G2LoadVec){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create the group.
+    const auto gp = Group();
+
+    // Create a vector of random g2, dump and load the vector.
+    G2Vec x(5);
+    for (auto& i : x){ g2_rand(i.value); }
+    const G2Vec y = gp.g2_load(gp.g2_dump(x));
+
+    for (int i = 0; i < x.size(); ++i)
+        EXPECT_EQ(g2_cmp(x[i].value, y[i].value), RLC_EQ);
+    BP::close();
+}
+
 TEST(GroupTests, G1Add){
     // Initialize the scheme.
     BP::init();

@@ -5,6 +5,10 @@ Group::Group(const bool& pre){
     g1_get_gen(gen_1.value);
     g2_get_gen(gen_2.value);
 
+    // Get the sizes of these values.
+    g1_size = g1_size_bin(gen_1.value, 1);
+    g2_size = g2_size_bin(gen_2.value, 1);
+
     // If we use the precomputed table.
     if (pre){
         // Table for group 1.
@@ -102,6 +106,71 @@ G2Vec Group::g2_raise(const FpVec& x) const{
     G2Vec r;
 
     for (const auto& i : x) r.push_back(g2_raise(i));
+
+    return r;
+}
+
+Bytes Group::g1_dump(const G1& x) const{
+    Bytes r(g1_size);
+
+    g1_write_bin(r.data(), g1_size, x.value, 1);
+
+    return r;
+}
+
+Bytes Group::g2_dump(const G2& x) const{
+    Bytes r(g2_size);
+
+    g2_write_bin(r.data(), g2_size, x.value, 1);
+
+    return r;
+}
+
+ByteVec Group::g1_dump(const G1Vec& x) const{
+    ByteVec r(x.size());
+
+    for (int i = 0; i < x.size(); ++i) r[i] = g1_dump(x[i]);
+
+    return r;
+}
+
+ByteVec Group::g2_dump(const G2Vec& x) const{
+    ByteVec r(x.size());
+
+    for (int i = 0; i < x.size(); ++i) r[i] = g2_dump(x[i]);
+
+    return r;
+}
+
+G1 Group::g1_load(const Bytes& x) const{
+    G1 r;
+
+    g1_read_bin(r.value, x.data(), g1_size);
+
+    return r;
+}
+
+G2 Group::g2_load(const Bytes& x) const{
+    G2 r;
+
+    g2_read_bin(r.value, x.data(), g2_size);
+
+    return r;
+}
+
+G1Vec Group::g1_load(const ByteVec& x) const{
+    G1Vec r(x.size());
+
+    for (int i = 0; i < x.size(); ++i) r[i] = g1_load(x[i]);
+
+    return r;
+}
+
+
+G2Vec Group::g2_load(const ByteVec& x) const{
+    G2Vec r(x.size());
+
+    for (int i = 0; i < x.size(); ++i) r[i] = g2_load(x[i]);
 
     return r;
 }
