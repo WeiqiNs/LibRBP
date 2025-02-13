@@ -39,7 +39,8 @@ Fp Field::from_int(const int& x) const{
     if (x >= 0){
         bn_set_dig(r.value, x);
         mod(r);
-    } else{
+    }
+    else{
         bn_set_dig(r.value, -x);
         mod(r);
         r = neg(r);
@@ -170,6 +171,14 @@ FpVec Field::vec_inv(const FpVec& x) const{
     return r;
 }
 
+Fp Field::vec_sum(const FpVec& x) const{
+    Fp r(0);
+
+    for (const auto& i : x) r = add(r, i);
+
+    return r;
+}
+
 Fp Field::vec_ip(const FpVec& x, const FpVec& y) const{
     if (x.size() != y.size())
         throw std::runtime_error("The input vectors are of different lengths.");
@@ -189,7 +198,7 @@ FpVec Field::poly_interpolate(const int& degree, const FpVec& roots) const{
         throw std::runtime_error("Their are too many roots provided.");
 
     // When the input is just a zero, we output all zeros.
-    if (roots.size() == 1 && cmp(roots[0], 0) ){
+    if (roots.size() == 1 && cmp(roots[0], 0)){
         const IntVec zero_vec(degree + 1, 0);
         return from_int(zero_vec);
     }

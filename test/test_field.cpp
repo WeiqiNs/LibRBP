@@ -217,6 +217,22 @@ TEST(FieldElementTests, VecInv){
     BP::close();
 }
 
+TEST(FieldElementTests, VecSum){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create a field.
+    const Field Zp(11);
+
+    // Perform testing.
+    const FpVec x = Zp.from_int(IntVec{1, 2, 3, 4, 5});
+    const Fp r = Zp.vec_sum(x);
+
+    // Test and then clear the core.
+    EXPECT_TRUE(Field::cmp(r, 4));
+    BP::close();
+}
+
 TEST(FieldElementTests, VecIp){
     // Initialize the scheme.
     BP::init();
