@@ -195,7 +195,7 @@ Fp Field::vec_ip(const FpVec& x, const FpVec& y) const{
 FpVec Field::poly_interpolate(const int& degree, const FpVec& roots) const{
     // Check if the input is legal.
     if (roots.size() > degree)
-        throw std::runtime_error("Their are too many roots provided.");
+        throw std::runtime_error("There are too many roots provided.");
 
     // When the input is just a zero, we output all zeros.
     if (roots.size() == 1 && cmp(roots[0], 0)){
