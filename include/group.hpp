@@ -5,9 +5,21 @@
 
 using G1Vec = std::vector<G1>;
 using G2Vec = std::vector<G2>;
+using G1Mat = std::vector<G1Vec>;
+using G2Mat = std::vector<G2Vec>;
+using Bytes = std::vector<uint8_t>;
+using ByteVec = std::vector<Bytes>;
 
 class Group{
 public:
+    /// Generate for group 1 and 2.
+    G1 gen_1;
+    G2 gen_2;
+
+    /// Sizes for g1 and g2 elements.
+    int g1_size;
+    int g2_size;
+
     /**
      * Default generator for creating the bilinear pairing group.
      * By default, it samples generators for the source groups G1 and G2.
@@ -36,7 +48,7 @@ public:
      * @param y an element in G2.
      * @return an element in Gt.
      */
-    static Gt pair(const G1& x, const G2& y);
+    [[nodiscard]] static Gt pair(const G1& x, const G2& y);
 
     /**
      * Perform pairing on vectors of group elements and find their products.
@@ -44,7 +56,21 @@ public:
      * @param y a vector of elements in G2.
      * @return an element in Gt.
      */
-    static Gt pair(const G1Vec& x, const G2Vec& y);
+    [[nodiscard]] static Gt pair(const G1Vec& x, const G2Vec& y);
+
+    /**
+     * Given a vector of G1 elements, add them (multiply to add the exponent.)
+     * @param x a vector of elements in G1.
+     * @return an element in G1.
+     */
+    [[nodiscard]] static G1 g1_add_vec(const G1Vec& x);
+
+    /**
+     * Given a vector of G2 elements, add them (multiply to add the exponent.)
+     * @param x a vector of elements in G2.
+     * @return an element in G2.
+     */
+    [[nodiscard]] static G2 g2_add_vec(const G2Vec& x);
 
     /**
      * Raise the generator G1 to some Zp value.
@@ -74,13 +100,33 @@ public:
      */
     [[nodiscard]] G2Vec g2_raise(const FpVec& x) const;
 
+    /// Dump a G1 element to bytes.
+    [[nodiscard]] Bytes g1_dump(const G1& x) const;
+
+    /// Dump a G2 element to bytes.
+    [[nodiscard]] Bytes g2_dump(const G2& x) const;
+
+    /// Dump a vector of G1 element to a vector of bytes.
+    [[nodiscard]] ByteVec g1_dump(const G1Vec& x) const;
+
+    /// Dump a vector of G2 element to a vector of bytes.
+    [[nodiscard]] ByteVec g2_dump(const G2Vec& x) const;
+
+    /// Load a G1 element from bytes.
+    [[nodiscard]] G1 g1_load(const Bytes& x) const;
+
+    /// Load a G2 element from bytes.
+    [[nodiscard]] G2 g2_load(const Bytes& x) const;
+
+    /// Load a vector of G1 element from a vector of bytes.
+    [[nodiscard]] G1Vec g1_load(const ByteVec& x) const;
+
+    /// Load a vector of G2 element from a vector of bytes.
+    [[nodiscard]] G2Vec g2_load(const ByteVec& x) const;
+
 private:
     /// Boolean to indicate whether precomputed table should be used.
     bool pre_table;
-
-    /// Generate for group 1 and 2.
-    G1 gen_1;
-    G2 gen_2;
 
     /// Precomputed tables for group 1 and 2.
     g1_t* table_1;

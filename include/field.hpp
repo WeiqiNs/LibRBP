@@ -91,6 +91,9 @@ public:
     /// Find x^(-1).
     [[nodiscard]] FpVec vec_inv(const FpVec& x) const;
 
+    /// Find sum(x).
+    [[nodiscard]] Fp vec_sum(const FpVec& x) const;
+
     /// Find <x,y>.
     [[nodiscard]] Fp vec_ip(const FpVec& x, const FpVec& y) const;
 
