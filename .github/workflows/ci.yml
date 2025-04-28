@@ -39,7 +39,7 @@ jobs:
       - name: Build and install
         run: |
           cmake --build build --parallel
-          cmake --install build
+          sudo cmake --install build
 
       - name: Run tests
         run: ctest --test-dir build --output-on-failure
