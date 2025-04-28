@@ -1,6 +1,7 @@
-# CMakeLists.txt (Revised)
+# Set cmake version.
 cmake_minimum_required(VERSION 3.20)
 
+# Project name and language.
 project(
         LibRBP
         VERSION 0.1
@@ -8,43 +9,40 @@ project(
         LANGUAGES CXX
 )
 
-# Set C++ standard
+# Set C++ standard.
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Include useful CMake modules
+# Include useful CMake modules.
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-# Enable unit testing
+# Enable unit testing.
 enable_testing()
 
-# Define install directory for CMake package files
+# Define install directory for CMake package files.
 set(RBP_CMAKE_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/RBP")
 
-# Find RELIC dependency
+# Find RELIC dependency.
 find_package(RELIC REQUIRED)
 
-# Find or fetch GoogleTest for unit testing
+# Find or fetch GoogleTest for unit testing.
 find_package(GTest)
 if(NOT GTest_FOUND)
         include(FetchContent)
         FetchContent_Declare(
                 googletest
-                URL https://github.com/google/googletest/archive/refs/tags/release-1.14.0.zip
-                DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+                GIT_REPOSITORY https://github.com/google/googletest.git
+                GIT_TAG main
         )
-        if(WIN32)
-                set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-        endif()
         FetchContent_MakeAvailable(googletest)
 endif()
 
-# Add source and test directories
+# Add source and test directories.
 add_subdirectory(src)
 add_subdirectory(test)
 
-# Install the RBP target
+# Install the RBP target.
 install(TARGETS RBP
         EXPORT RBPTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -53,17 +51,17 @@ install(TARGETS RBP
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-# Install public headers
+# Install public headers.
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/RBP)
 
-# Install and export CMake targets
+# Install and export CMake targets.
 install(EXPORT RBPTargets
         FILE RBPTargets.cmake
         NAMESPACE RBP::
         DESTINATION ${RBP_CMAKE_INSTALL_DIR}
 )
 
-# Generate and install package config files
+# Generate and install package config files.
 configure_package_config_file(cmake/RBPConfig.cmake.in
         "${CMAKE_CURRENT_BINARY_DIR}/RBPConfig.cmake"
         INSTALL_DESTINATION ${RBP_CMAKE_INSTALL_DIR}
