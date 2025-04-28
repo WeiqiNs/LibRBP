@@ -46,10 +46,10 @@ jobs:
 
       - name: Capture coverage
         run: |
-          lcov --directory build --capture --output-file coverage.info
-          # Remove system and test files from the report
+          lcov --ignore-errors mismatch,gcov \
+               --directory build \
+               --capture --output-file coverage.info
           lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
-          lcov --list coverage.info
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v5
@@ -94,6 +94,9 @@ jobs:
 
       - name: Checkout main repository
         uses: actions/checkout@v4
+
+      - name: Configure CMake with coverage flags
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
       - name: Build project
         run: cmake --build build --parallel
