@@ -12,13 +12,7 @@ using ByteVec = std::vector<Bytes>;
 
 class Group{
 public:
-    /// Generate for group 1 and 2.
-    G1 gen_1;
-    G2 gen_2;
 
-    /// Sizes for g1 and g2 elements.
-    int g1_size;
-    int g2_size;
 
     /**
      * Default generator for creating the bilinear pairing group.
@@ -127,6 +121,14 @@ public:
 private:
     /// Boolean to indicate whether precomputed table should be used.
     bool pre_table;
+
+    /// Generate for group 1 and 2.
+    G1 gen_1;
+    G2 gen_2;
+
+    /// Sizes for g1 and g2 elements.
+    int g1_size;
+    int g2_size;
 
     /// Precomputed tables for group 1 and 2.
     g1_t* table_1;
