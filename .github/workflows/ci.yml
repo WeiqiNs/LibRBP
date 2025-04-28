@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  asym_build_and_test:
+  Asym_Test_Cov_Demo:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,19 +33,18 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v4
 
-      - name: Configure CMake (coverage flags)
+      - name: Configure CMake with coverage flags
         run: cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DENABLE_CODE_COVERAGE=ON
 
-      - name: Build
-        run: cmake --build build --parallel
-
-      - name: Install
-        run: cmake --install build --prefix ${{ github.workspace }}/install
+      - name: Build and install
+        run: |
+          cmake --build build --parallel
+          cmake --install build --prefix ${{ github.workspace }}/install
 
       - name: Run tests
         run: ctest --test-dir build --output-on-failure
 
-      - name: Capture coverage (lcov)
+      - name: Capture coverage
         run: |
           lcov --directory build --capture --output-file coverage.info
           # Remove system and test files from the report
@@ -53,15 +52,24 @@ jobs:
           lcov --list coverage.info
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.info
           flags: unittests
           fail_ci_if_error: true
 
+      - name: Build demo
+        run: |
+          cmake -B demo_build -S demo \
+             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+             -DENABLE_CODE_COVERAGE=ON
+          cmake --build demo_build --parallel
 
-  sym_build_and_test:
+      - name: Run demo
+        run: ./demo_build/demo
+
+  Sym_Test:
     runs-on: ubuntu-latest
 
     steps:
@@ -87,27 +95,8 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v4
 
-      - name: Build and install project
-        run: |
-          mkdir build
-          cd build
-          cmake ..
-          sudo make
-          sudo make install
+      - name: Build project
+        run: cmake --build build --parallel
 
       - name: Run tests
-        run: |
-          cd build
-          ctest
-
-      - name: Build demo
-        run: |
-          mkdir demo/build
-          cd demo/build
-          cmake ..
-          sudo make
-
-      - name: Run demo
-        run: |
-          cd demo/build
-          ./demo
+        run: ctest
