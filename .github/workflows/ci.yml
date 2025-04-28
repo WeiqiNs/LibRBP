@@ -27,8 +27,8 @@ jobs:
           mkdir relic/build
           cd relic/build
           ../preset/gmp-pbc-bls381.sh ..
-          sudo make
-          sudo make install
+          cmake --build . --parallel
+          sudo cmake --install .
 
       - name: Checkout main repository
         uses: actions/checkout@v4
@@ -61,9 +61,7 @@ jobs:
 
       - name: Build demo
         run: |
-          cmake -B demo_build -S demo \
-             -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-             -DENABLE_CODE_COVERAGE=ON
+          cmake -B demo_build -S demo -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
           cmake --build demo_build --parallel
 
       - name: Run demo
