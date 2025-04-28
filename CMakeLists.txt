@@ -9,6 +9,15 @@ project(
         LANGUAGES CXX
 )
 
+# Setup the coverage knob.
+option(ENABLE_CODE_COVERAGE "Build with --coverage flags" OFF)
+if (ENABLE_CODE_COVERAGE)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        add_compile_options(--coverage -O0 -g)
+        add_link_options(--coverage)
+    endif ()
+endif ()
+
 # Set C++ standard.
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
