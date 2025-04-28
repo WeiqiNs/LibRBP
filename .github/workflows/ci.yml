@@ -14,7 +14,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev cmake
+          sudo apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev cmake lcov
 
       - name: Checkout RELIC
         uses: actions/checkout@v4
@@ -33,30 +33,33 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v4
 
-      - name: Build and install project
-        run: |
-          mkdir build
-          cd build
-          cmake ..
-          sudo make
-          sudo make install
+      - name: Configure CMake (coverage flags)
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DENABLE_CODE_COVERAGE=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Install
+        run: cmake --install build --prefix ${{ github.workspace }}/install
 
       - name: Run tests
-        run: |
-          cd build
-          ctest
+        run: ctest --test-dir build --output-on-failure
 
-      - name: Build demo
+      - name: Capture coverage (lcov)
         run: |
-          mkdir demo/build
-          cd demo/build
-          cmake ..
-          sudo make
+          lcov --directory build --capture --output-file coverage.info
+          # Remove system and test files from the report
+          lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
+          lcov --list coverage.info
 
-      - name: Run demo
-        run: |
-          cd demo/build
-          ./demo
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.info
+          flags: unittests
+          fail_ci_if_error: true
+
 
   sym_build_and_test:
     runs-on: ubuntu-latest
