@@ -4,10 +4,9 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
 
 jobs:
-  Asym_Test_Cov_Demo:
+  Asym-Test-Cov-Demo:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,8 +23,7 @@ jobs:
 
       - name: Install RELIC asymmetric curve
         run: |
-          mkdir relic/build
-          cd relic/build
+          mkdir relic/build && cd relic/build
           ../preset/gmp-pbc-bls381.sh ..
           cmake --build . --parallel
           sudo cmake --install .
@@ -33,13 +31,10 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v4
 
-      - name: Configure CMake with coverage flags
-        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DENABLE_CODE_COVERAGE=ON
-
-      - name: Build and install
+      - name: Configure RBP with coverage flags and build
         run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DENABLE_CODE_COVERAGE=ON
           cmake --build build --parallel
-          sudo cmake --install build
 
       - name: Run tests
         run: ctest --test-dir build --output-on-failure
@@ -59,9 +54,15 @@ jobs:
           flags: unittests
           fail_ci_if_error: true
 
+      - name: Reconfigure RBP without coverage, build, and install
+        run: |
+          rm -rf build && cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
+          sudo cmake --install build
+
       - name: Build demo
         run: |
-          cmake -B demo_build -S demo -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          cmake -B demo_build -S demo -DCMAKE_BUILD_TYPE=Release
           cmake --build demo_build --parallel
 
       - name: Run demo
@@ -93,7 +94,7 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v4
 
-      - name: Configure CMake with coverage flags
+      - name: Configure CMake
         run: cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
       - name: Build project
