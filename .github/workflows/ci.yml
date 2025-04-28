@@ -46,10 +46,11 @@ jobs:
 
       - name: Capture coverage
         run: |
-          lcov --ignore-errors mismatch,gcov \
+          lcov --ignore-errors mismatch,gcov,unused \
                --directory build \
                --capture --output-file coverage.info
           lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
+          lcov --extract coverage.info '*/src/*' --output-file coverage.info
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v5
