@@ -12,8 +12,6 @@ using ByteVec = std::vector<Bytes>;
 
 class Group{
 public:
-
-
     /**
      * Default generator for creating the bilinear pairing group.
      * By default, it samples generators for the source groups G1 and G2.
@@ -67,6 +65,20 @@ public:
     [[nodiscard]] static G2 g2_add_vec(const G2Vec& x);
 
     /**
+     *
+     * @param x
+     * @param y
+     * @return
+     */
+    [[nodiscard]] Gt static gt_raise(const Gt& x, const int& y);
+
+    /**
+     *
+     * @return
+     */
+    [[nodiscard]] Gt get_gt() const;
+
+    /**
      * Raise the generator G1 to some Zp value.
      * @param x a field point.
      * @return an element in G1.
@@ -79,6 +91,13 @@ public:
      * @return an element in G2.
      */
     [[nodiscard]] G2 g2_raise(const Fp& x) const;
+
+    /**
+     *
+     * @param x
+     * @return
+     */
+    [[nodiscard]] Gt gt_raise(const int& x) const;
 
     /**
      * Raise the generator G1 to a vector of Zp values.
@@ -125,6 +144,9 @@ private:
     /// Generate for group 1 and 2.
     G1 gen_1;
     G2 gen_2;
+
+    /// Generator in the target group.
+    Gt gt;
 
     /// Sizes for g1 and g2 elements.
     int g1_size;
