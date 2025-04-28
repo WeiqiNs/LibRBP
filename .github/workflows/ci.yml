@@ -46,6 +46,9 @@ jobs:
                --capture --output-file coverage.info
           lcov --extract coverage.info '*/src/**' --output-file coverage.info
 
+      - name: Coverage list
+        run: lcov --list coverage.info | head
+
       - name: Upload to Codecov
         uses: codecov/codecov-action@v5
         with:
