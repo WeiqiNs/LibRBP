@@ -65,17 +65,14 @@ public:
     [[nodiscard]] static G2 g2_add_vec(const G2Vec& x);
 
     /**
-     *
-     * @param x
-     * @param y
-     * @return
+     * Given a Gt element, raise it to an integer.
+     * @param x an element in Gt.
+     * @param y an integer.
+     * @return an element in Gt.
      */
     [[nodiscard]] Gt static gt_raise(const Gt& x, const int& y);
 
-    /**
-     *
-     * @return
-     */
+    /// Get the gt element with subgroup generators.
     [[nodiscard]] Gt get_gt() const;
 
     /**
@@ -93,9 +90,9 @@ public:
     [[nodiscard]] G2 g2_raise(const Fp& x) const;
 
     /**
-     *
-     * @param x
-     * @return
+     * Raise the target group element to an integer.
+     * @param x an integer.
+     * @return an element in Gt.
      */
     [[nodiscard]] Gt gt_raise(const int& x) const;
 
