@@ -29,9 +29,6 @@ include(CMakePackageConfigHelpers)
 # Enable unit testing.
 enable_testing()
 
-# Define install directory for CMake package files.
-set(RBP_CMAKE_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/RBP")
-
 # Find RELIC dependency.
 find_package(RELIC REQUIRED)
 
@@ -50,6 +47,9 @@ endif ()
 # Add source and test directories.
 add_subdirectory(src)
 add_subdirectory(test)
+
+# Define install directory for CMake package files.
+set(RBP_CMAKE_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/RBP")
 
 # Install the RBP target.
 install(TARGETS RBP

@@ -1,6 +1,7 @@
 # RELIC based Bilinear Pairing Library (LibRBP)
 
 [![LibRBP CI](https://github.com/Weiqi97/LibRBP/actions/workflows/ci.yml/badge.svg)](https://github.com/Weiqi97/LibRBP/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/WeiqiNs/LibRBP/graph/badge.svg?token=U1HZR28Q1Y)](https://codecov.io/gh/WeiqiNs/LibRBP)
 
 LibRBP is a wrapper designed for constructing bilinear pairing groups using
 the [RELIC](https://github.com/relic-toolkit/relic) library. It offers a set of convenient APIs to facilitate the
