@@ -28,15 +28,15 @@ find_package(RELIC REQUIRED)
 
 # Find or fetch GoogleTest for unit testing.
 find_package(GTest)
-if(NOT GTest_FOUND)
-        include(FetchContent)
-        FetchContent_Declare(
-                googletest
-                GIT_REPOSITORY https://github.com/google/googletest.git
-                GIT_TAG main
-        )
-        FetchContent_MakeAvailable(googletest)
-endif()
+if (NOT GTest_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+            googletest
+            GIT_REPOSITORY https://github.com/google/googletest.git
+            GIT_TAG main
+    )
+    FetchContent_MakeAvailable(googletest)
+endif ()
 
 # Add source and test directories.
 add_subdirectory(src)
