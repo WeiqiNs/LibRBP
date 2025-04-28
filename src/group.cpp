@@ -5,6 +5,9 @@ Group::Group(const bool& pre){
     g1_get_gen(gen_1.value);
     g2_get_gen(gen_2.value);
 
+    // Compute the generator.
+    gt = pair(gen_1, gen_2);
+
     // Get the sizes of these values.
     g1_size = g1_size_bin(gen_1.value, 1);
     g2_size = g2_size_bin(gen_2.value, 1);
@@ -49,10 +52,12 @@ Gt Group::pair(const G1Vec& x, const G2Vec& y){
     const auto size = x.size();
 
     std::vector<g1_t> xv(x.size());
-    for (int i = 0; i < size; ++i) g1_copy(xv[i], x[i].value);
+    for (int i = 0; i < size; ++i)
+        g1_copy(xv[i], x[i].value);
 
     std::vector<g2_t> yv(y.size());
-    for (int i = 0; i < size; ++i) g2_copy(yv[i], y[i].value);
+    for (int i = 0; i < size; ++i)
+        g2_copy(yv[i], y[i].value);
 
     Gt r;
     pc_map_sim(r.value, xv.data(), yv.data(), size);
@@ -63,7 +68,8 @@ Gt Group::pair(const G1Vec& x, const G2Vec& y){
 G1 Group::g1_add_vec(const G1Vec& x){
     G1 r = x[0];
 
-    for (int i = 1; i < x.size(); ++i) g1_add(r.value, r.value, x[i].value);
+    for (int i = 1; i < x.size(); ++i)
+    g1_add(r.value, r.value, x[i].value);
 
     return r;
 }
@@ -71,15 +77,25 @@ G1 Group::g1_add_vec(const G1Vec& x){
 G2 Group::g2_add_vec(const G2Vec& x){
     G2 r = x[0];
 
-    for (int i = 1; i < x.size(); ++i) g2_add(r.value, r.value, x[i].value);
+    for (int i = 1; i < x.size(); ++i)
+    g2_add(r.value, r.value, x[i].value);
 
     return r;
 }
 
+Gt Group::gt_raise(const Gt& x, const int& y){
+    Gt r;
+    gt_exp_dig(r.value, x.value, y);
+    return r;
+}
+
+Gt Group::get_gt() const{ return gt; }
+
 G1 Group::g1_raise(const Fp& x) const{
     G1 r;
 
-    if (pre_table) g1_mul_fix(r.value, table_1, x.value);
+    if (pre_table)
+    g1_mul_fix(r.value, table_1, x.value);
     else g1_mul(r.value, gen_1.value, x.value);
 
     return r;
@@ -88,9 +104,16 @@ G1 Group::g1_raise(const Fp& x) const{
 G2 Group::g2_raise(const Fp& x) const{
     G2 r;
 
-    if (pre_table) g2_mul_fix(r.value, table_2, x.value);
+    if (pre_table)
+    g2_mul_fix(r.value, table_2, x.value);
     else g2_mul(r.value, gen_2.value, x.value);
 
+    return r;
+}
+
+Gt Group::gt_raise(const int& x) const{
+    Gt r;
+    gt_exp_dig(r.value, gt.value, x);
     return r;
 }
 

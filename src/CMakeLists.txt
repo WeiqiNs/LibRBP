@@ -1,25 +1,25 @@
-# Get all header and source files.
-file(GLOB SOURCE_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/src/*.cpp")
+# Collect all source files.
+file(GLOB SOURCE_LIST CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-# Make an automatic library - will be static or dynamic based on user setting.
+# Create the library.
 add_library(RBP ${SOURCE_LIST})
 
-# Add this line:
+# Create a target alias.
 add_library(RBP::RBP ALIAS RBP)
 
-# We need this directory, and users of our library will need it too.
+# Set include directories for consumers.
 target_include_directories(RBP PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
 
+# Correctly include the relic library.
 target_link_libraries(RBP PUBLIC ${RLC_LIBRARY})
-
-# Add this line to ensure RELIC's include directories are correctly passed
 target_include_directories(RBP PUBLIC ${RLC_INCLUDE_DIRS})
 
-# Add RPATH settings
+# Set install paths.
 set_target_properties(RBP PROPERTIES
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-    BUILD_WITH_INSTALL_RPATH TRUE
-    INSTALL_RPATH_USE_LINK_PATH TRUE)
+        INSTALL_RPATH "$ORIGIN/../lib"
+        BUILD_WITH_INSTALL_RPATH TRUE
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+)
