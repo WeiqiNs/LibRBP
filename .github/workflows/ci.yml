@@ -1,6 +1,10 @@
 name: LibRBP CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   asym_build_and_test:
@@ -10,7 +14,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev libgtest-dev cmake
+          sudo apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev cmake
 
       - name: Checkout RELIC
         uses: actions/checkout@v4
