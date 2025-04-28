@@ -4,17 +4,16 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
 
 jobs:
-  asym_build_and_test:
+  Asym-Test-Cov-Demo:
     runs-on: ubuntu-latest
 
     steps:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev cmake
+          sudo apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev cmake lcov
 
       - name: Checkout RELIC
         uses: actions/checkout@v4
@@ -24,41 +23,52 @@ jobs:
 
       - name: Install RELIC asymmetric curve
         run: |
-          mkdir relic/build
-          cd relic/build
+          mkdir relic/build && cd relic/build
           ../preset/gmp-pbc-bls381.sh ..
-          sudo make
-          sudo make install
+          cmake --build . --parallel
+          sudo cmake --install .
 
       - name: Checkout main repository
         uses: actions/checkout@v4
 
-      - name: Build and install project
+      - name: Configure RBP with coverage flags and build
         run: |
-          mkdir build
-          cd build
-          cmake ..
-          sudo make
-          sudo make install
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DENABLE_CODE_COVERAGE=ON
+          cmake --build build --parallel
 
       - name: Run tests
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Capture coverage
         run: |
-          cd build
-          ctest
+          lcov --ignore-errors mismatch,gcov,unused \
+               --directory build \
+               --capture --output-file coverage.info
+          lcov --extract coverage.info '*/src/*' --output-file coverage.info
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.info
+          flags: unittests
+          fail_ci_if_error: true
+
+      - name: Reconfigure RBP without coverage, build, and install
+        run: |
+          rm -rf build && cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
+          sudo cmake --install build
 
       - name: Build demo
         run: |
-          mkdir demo/build
-          cd demo/build
-          cmake ..
-          sudo make
+          cmake -B demo_build -S demo -DCMAKE_BUILD_TYPE=Release
+          cmake --build demo_build --parallel
 
       - name: Run demo
-        run: |
-          cd demo/build
-          ./demo
+        run: ./demo_build/demo
 
-  sym_build_and_test:
+  Sym-Test:
     runs-on: ubuntu-latest
 
     steps:
@@ -75,36 +85,18 @@ jobs:
 
       - name: Install RELIC symmetric curve
         run: |
-          mkdir relic/build
-          cd relic/build
+          mkdir relic/build && cd relic/build
           ../preset/gmp-pbc-ss1536.sh ..
-          sudo make
-          sudo make install
+          cmake --build . --parallel
+          sudo cmake --install .
 
       - name: Checkout main repository
         uses: actions/checkout@v4
 
-      - name: Build and install project
-        run: |
-          mkdir build
-          cd build
-          cmake ..
-          sudo make
-          sudo make install
+      - name: Configure CMake
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
-      - name: Run tests
+      - name: Build project and run tests
         run: |
-          cd build
+          cmake --build build --parallel
           ctest
-
-      - name: Build demo
-        run: |
-          mkdir demo/build
-          cd demo/build
-          cmake ..
-          sudo make
-
-      - name: Run demo
-        run: |
-          cd demo/build
-          ./demo
