@@ -119,10 +119,12 @@ TEST(GroupTests, Pairing){
     // Test pairing with precomputed table.
     const auto gp = Group();
     const auto r1 = Group::pair(gp.g1_raise(x), gp.g2_raise(y));
-    const auto r2 = Group::pair(gp.g1_raise(y), gp.g2_raise(x));
+    const auto r2 = Group::gt_raise(gp.get_gt(), 143);
+    const auto r3 = gp.gt_raise(143);
 
     // Test and then clear the core.
     EXPECT_TRUE(Group::cmp_gt(r1, r2));
+    EXPECT_TRUE(Group::cmp_gt(r1, r3));
     BP::close();
 }
 

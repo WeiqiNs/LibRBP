@@ -1,26 +1,27 @@
-# -----------------------------------------------------
-# Include google test here and enable testing.
+# Enable Google Test framework.
 include(GoogleTest)
-# Set alias for google test.
-set(GTEST_LIB gtest gtest_main)
-# -----------------------------------------------------
-add_executable(test_fp test_fp.cpp)
-target_link_libraries(test_fp RBP ${GTEST_LIB})
-gtest_discover_tests(test_fp)
-# -----------------------------------------------------
-add_executable(test_field test_field.cpp)
-target_link_libraries(test_field RBP ${GTEST_LIB})
-gtest_discover_tests(test_field)
-# -----------------------------------------------------
-add_executable(test_gp test_gp.cpp)
-target_link_libraries(test_gp RBP ${GTEST_LIB})
-gtest_discover_tests(test_gp)
-# -----------------------------------------------------
-add_executable(test_group test_group.cpp)
-target_link_libraries(test_group RBP ${GTEST_LIB})
-gtest_discover_tests(test_group)
-# -----------------------------------------------------
-add_executable(test_bp test_bp.cpp)
-target_link_libraries(test_bp RBP ${GTEST_LIB})
-gtest_discover_tests(test_bp)
-# -----------------------------------------------------
+
+# List of test source files.
+set(TEST_SOURCES
+        test_fp.cpp
+        test_field.cpp
+        test_gp.cpp
+        test_group.cpp
+        test_bp.cpp
+)
+
+# Create test executables and register them.
+foreach (TEST_SRC IN LISTS TEST_SOURCES)
+    get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
+    add_executable(${TEST_NAME} ${TEST_SRC})
+    target_link_libraries(${TEST_NAME}
+            PRIVATE
+            RBP
+            GTest::gtest
+            GTest::gtest_main
+    )
+    gtest_discover_tests(${TEST_NAME})
+
+    # Set folder for IDEs.
+    set_target_properties(${TEST_NAME} PROPERTIES FOLDER "Tests")
+endforeach ()

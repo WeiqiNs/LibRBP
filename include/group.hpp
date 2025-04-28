@@ -12,14 +12,6 @@ using ByteVec = std::vector<Bytes>;
 
 class Group{
 public:
-    /// Generate for group 1 and 2.
-    G1 gen_1;
-    G2 gen_2;
-
-    /// Sizes for g1 and g2 elements.
-    int g1_size;
-    int g2_size;
-
     /**
      * Default generator for creating the bilinear pairing group.
      * By default, it samples generators for the source groups G1 and G2.
@@ -73,6 +65,17 @@ public:
     [[nodiscard]] static G2 g2_add_vec(const G2Vec& x);
 
     /**
+     * Given a Gt element, raise it to an integer.
+     * @param x an element in Gt.
+     * @param y an integer.
+     * @return an element in Gt.
+     */
+    [[nodiscard]] Gt static gt_raise(const Gt& x, const int& y);
+
+    /// Get the gt element with subgroup generators.
+    [[nodiscard]] Gt get_gt() const;
+
+    /**
      * Raise the generator G1 to some Zp value.
      * @param x a field point.
      * @return an element in G1.
@@ -85,6 +88,13 @@ public:
      * @return an element in G2.
      */
     [[nodiscard]] G2 g2_raise(const Fp& x) const;
+
+    /**
+     * Raise the target group element to an integer.
+     * @param x an integer.
+     * @return an element in Gt.
+     */
+    [[nodiscard]] Gt gt_raise(const int& x) const;
 
     /**
      * Raise the generator G1 to a vector of Zp values.
@@ -127,6 +137,17 @@ public:
 private:
     /// Boolean to indicate whether precomputed table should be used.
     bool pre_table;
+
+    /// Generate for group 1 and 2.
+    G1 gen_1;
+    G2 gen_2;
+
+    /// Generator in the target group.
+    Gt gt;
+
+    /// Sizes for g1 and g2 elements.
+    int g1_size;
+    int g2_size;
 
     /// Precomputed tables for group 1 and 2.
     g1_t* table_1;
