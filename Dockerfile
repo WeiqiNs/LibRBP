@@ -1,32 +1,29 @@
+# A sample file to show how to build and install the LibRBP and use it in another project.
 FROM ubuntu:latest
 
-# Update libraries.
+# Perform apt update and upgrade.
 RUN apt update && apt upgrade -y
-# Install needed libraries.
-RUN apt install -y git build-essential libgmp-dev libmpfr-dev libssl-dev libgtest-dev gdb cmake
+# Reindex and install needed libraries.
+RUN apt update && apt install -y git gdb cmake build-essential libgmp-dev libmpfr-dev libssl-dev libgtest-dev
 # Clean up.
 RUN apt clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Download library and extract. (One could use git clone but this is easier for swithing to published versions.
+# Download the RELIC library and the RBP library.
 RUN git clone https://github.com/relic-toolkit/relic.git
+RUN git clone https://github.com/WeiqiNs/LibRBP.git
 
-## Relic library installation.
+# RELIC library installation.
 RUN mkdir /relic/build
 WORKDIR "/relic/build"
-RUN ../preset/gmp-pbc-bls381.sh .. && make && make install
+RUN ../preset/gmp-pbc-bls381.sh .. && cmake --build . --parallel && cmake --install .
 
-# Copy the files over to working directory.
-RUN mkdir -p /LibRBP/build
-COPY . /LibRBP
-
-# Build the project, run tests and install.
-WORKDIR "/LibRBP/build"
-RUN cmake .. && make && ctest && make install
+# RBP library installation.
+WORKDIR "/LibRBP"
+RUN cmake -B build -S . && cmake --build build --parallel && cmake --install build
 
 # Build the demo to make sure it works.
-RUN mkdir -p /LibRBP/demo/build
-WORKDIR "/LibRBP/demo/build"
-RUN cmake .. && make
+WORKDIR "/LibRBP/demo"
+RUN cmake -B build -S . && cmake --build build --parallel
 
 # Run the demo and keep container running.
-CMD ["/bin/sh", "-c", "./demo && tail -f /dev/null"]
+CMD ["/bin/sh", "-c", "./build/demo && tail -f /dev/null"]
