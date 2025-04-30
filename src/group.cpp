@@ -89,6 +89,12 @@ Gt Group::gt_raise(const Gt& x, const int& y){
     return r;
 }
 
+Gt Group::gt_raise(const Gt& x, const Fp& y){
+    Gt r;
+    gt_exp(r.value, x.value, y.value);
+    return r;
+}
+
 Gt Group::get_gt() const{ return gt; }
 
 G1 Group::g1_raise(const Fp& x) const{
@@ -111,11 +117,9 @@ G2 Group::g2_raise(const Fp& x) const{
     return r;
 }
 
-Gt Group::gt_raise(const int& x) const{
-    Gt r;
-    gt_exp_dig(r.value, gt.value, x);
-    return r;
-}
+Gt Group::gt_raise(const int& x) const{ return gt_raise(gt, x); }
+
+Gt Group::gt_raise(const Fp& x) const{ return gt_raise(gt, x); }
 
 G1Vec Group::g1_raise(const FpVec& x) const{
     G1Vec r;

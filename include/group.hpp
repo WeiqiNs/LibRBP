@@ -72,6 +72,14 @@ public:
      */
     [[nodiscard]] Gt static gt_raise(const Gt& x, const int& y);
 
+    /**
+     * Given a Gt element, raise it to an integer.
+     * @param x an element in Gt.
+     * @param y a field point.
+     * @return an element in Gt.
+     */
+    [[nodiscard]] Gt static gt_raise(const Gt& x, const Fp& y);
+
     /// Get the gt element with subgroup generators.
     [[nodiscard]] Gt get_gt() const;
 
@@ -95,6 +103,13 @@ public:
      * @return an element in Gt.
      */
     [[nodiscard]] Gt gt_raise(const int& x) const;
+
+    /**
+     * Raise the target group element to an integer.
+     * @param x a field point.
+     * @return an element in Gt.
+     */
+    [[nodiscard]] Gt gt_raise(const Fp& x) const;
 
     /**
      * Raise the generator G1 to a vector of Zp values.

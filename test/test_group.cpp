@@ -107,6 +107,27 @@ TEST(GroupTests, G2Add){
     BP::close();
 }
 
+TEST(GroupTests, GtRaise){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create a field and a group.
+    const Field Zp(101);
+    const auto gp = Group();
+    const Fp x(20);
+
+    // Set testing points.
+    const auto r1 = Group::gt_raise(gp.get_gt(), x);
+    const auto r2 = gp.gt_raise(x);
+    const auto r3 = Group::gt_raise(gp.get_gt(), 515);
+    const auto r4 = gp.gt_raise(515);
+
+    // Test and then clear the core.
+    EXPECT_TRUE(Group::cmp_gt(r1, r2));
+    EXPECT_TRUE(Group::cmp_gt(r3, r4));
+    BP::close();
+}
+
 TEST(GroupTests, Pairing){
     // Initialize the scheme.
     BP::init();
@@ -120,11 +141,9 @@ TEST(GroupTests, Pairing){
     const auto gp = Group();
     const auto r1 = Group::pair(gp.g1_raise(x), gp.g2_raise(y));
     const auto r2 = Group::gt_raise(gp.get_gt(), 143);
-    const auto r3 = gp.gt_raise(143);
 
     // Test and then clear the core.
     EXPECT_TRUE(Group::cmp_gt(r1, r2));
-    EXPECT_TRUE(Group::cmp_gt(r1, r3));
     BP::close();
 }
 
@@ -140,7 +159,7 @@ TEST(GroupTests, PairingNoPre){
     // Test pairing without precomputed table.
     const auto gp = Group(false);
     const auto r1 = Group::pair(gp.g1_raise(x), gp.g2_raise(y));
-    const auto r2 = Group::pair(gp.g1_raise(y), gp.g2_raise(x));
+    const auto r2 = Group::gt_raise(gp.get_gt(), 143);
 
     // Test and then clear the core.
     EXPECT_TRUE(Group::cmp_gt(r1, r2));
@@ -163,7 +182,7 @@ TEST(GroupTests, PairingVec){
     // Test pairing with vectors.
     const auto gp = Group(false);
     const auto r1 = Group::pair(gp.g1_raise(x), gp.g2_raise(y));
-    const auto r2 = Group::pair(gp.g1_raise(y), gp.g2_raise(x));
+    const auto r2 = Group::gt_raise(gp.get_gt(), 542);
 
     // Test and then clear the core.
     EXPECT_TRUE(Group::cmp_gt(r1, r2));
