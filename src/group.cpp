@@ -97,6 +97,34 @@ Gt Group::gt_raise(const Gt& x, const Fp& y){
 
 Gt Group::get_gt() const{ return gt; }
 
+Gt Group::gt_div(const Gt& x, const Gt& y){
+    Gt r;
+
+    // First find inverse of y.
+    gt_inv(r.value, y.value);
+
+    // Then we find x * yi.
+    gt_mul(r.value, x.value, r.value);
+
+    return r;
+}
+
+int Group::find_exp(const Gt& base, const Gt& target, const int lower_bound, int upper_bound){
+    // Set an index and a temp value, which is base raised to lower bound.
+    Gt temp = gt_raise(base, lower_bound);
+    int index = lower_bound;
+
+    // Start comparing from lower bound.
+    while (index <= upper_bound){
+        if (cmp_gt(temp, target)) return index;
+        ++index;
+        gt_mul(temp.value, temp.value, base.value);
+    }
+
+    // If never found, return -1.
+    return -1;
+}
+
 G1 Group::g1_raise(const Fp& x) const{
     G1 r;
 

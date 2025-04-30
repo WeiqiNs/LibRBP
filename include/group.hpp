@@ -80,6 +80,24 @@ public:
      */
     [[nodiscard]] Gt static gt_raise(const Gt& x, const Fp& y);
 
+    /**
+     * Given two Gt elements x and y, perform division x / y, which equivalents to subtraction in the exponent.
+     * @param x an element in Gt.
+     * @param y an element in Gt.
+     * @return the division result, an element in Gt.
+     */
+    [[nodiscard]] static Gt gt_div(const Gt& x, const Gt& y);
+
+    /**
+     * Given two Gt elements base and target, where base^x = target, find x.
+     * @param base an element in Gt.
+     * @param target an element in Gt.
+     * @param lower_bound the lower bound of the exponent.
+     * @param upper_bound the upper bound of the exponent.
+     * @return the exponent, an integer.
+     */
+    [[nodiscard]] static int find_exp(const Gt& base, const Gt& target, int lower_bound, int upper_bound);
+
     /// Get the gt element with subgroup generators.
     [[nodiscard]] Gt get_gt() const;
 

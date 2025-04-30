@@ -128,6 +128,51 @@ TEST(GroupTests, GtRaise){
     BP::close();
 }
 
+TEST(GroupTests, GtDiv){
+    // Initialize the scheme and create group object.
+    BP::init();
+    const auto gp = Group();
+
+    // Set testing points and perform division.
+    const auto x = gp.gt_raise(100);
+    const auto y = gp.gt_raise(50);
+    const auto r = Group::gt_div(x, y);
+
+    // Test and then clear the core.
+    EXPECT_TRUE(Group::cmp_gt(y, r));
+    BP::close();
+}
+
+TEST(GroupTests, GtFindExpTrue){
+    // Initialize the scheme and create group object.
+    BP::init();
+    const auto gp = Group();
+
+    // Set testing points and perform division.
+    const auto x = gp.gt_raise(10);
+    const auto y = gp.gt_raise(200);
+    const auto r = Group::find_exp(x, y, 15, 25);
+
+    // Test and then clear the core.
+    EXPECT_EQ(r, 20);
+    BP::close();
+}
+
+TEST(GroupTests, GtFindExpFalse){
+    // Initialize the scheme and create group object.
+    BP::init();
+    const auto gp = Group();
+
+    // Set testing points and perform division.
+    const auto x = gp.gt_raise(10);
+    const auto y = gp.gt_raise(200);
+    const auto r = Group::find_exp(x, y, 11, 19);
+
+    // Test and then clear the core.
+    EXPECT_EQ(r, -1);
+    BP::close();
+}
+
 TEST(GroupTests, Pairing){
     // Initialize the scheme.
     BP::init();
