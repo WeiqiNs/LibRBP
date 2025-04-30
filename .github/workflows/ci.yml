@@ -1,9 +1,10 @@
-name: LibRBP CI
+name: Github CI
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
 
 jobs:
   Asym-Test-Cov-Demo:
