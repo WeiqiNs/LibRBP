@@ -1,6 +1,21 @@
 #include <gtest/gtest.h>
 #include "bp.hpp"
 
+TEST(GroupTests, G1Size){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create the group.
+    const auto gp = Group();
+
+    // Create a random g1 and dump it.
+    G1 x;
+    g1_rand(x.value);
+    const Bytes xb = gp.g1_dump(x);
+
+    EXPECT_EQ(xb.size(), gp.get_g1_size());
+}
+
 TEST(GroupTests, G1Load){
     // Initialize the scheme.
     BP::init();
@@ -32,6 +47,21 @@ TEST(GroupTests, G1LoadVec){
     for (int i = 0; i < x.size(); ++i)
         EXPECT_EQ(g1_cmp(x[i].value, y[i].value), RLC_EQ);
     BP::close();
+}
+
+TEST(GroupTests, G2Size){
+    // Initialize the scheme.
+    BP::init();
+
+    // Create the group.
+    const auto gp = Group();
+
+    // Create a random g1 and dump it.
+    G2 x;
+    g2_rand(x.value);
+    const Bytes xb = gp.g2_dump(x);
+
+    EXPECT_EQ(xb.size(), gp.get_g2_size());
 }
 
 TEST(GroupTests, G2Load){
