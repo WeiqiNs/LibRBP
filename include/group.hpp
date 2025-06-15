@@ -34,6 +34,12 @@ public:
      */
     static bool check_gt_unity(const Gt& x);
 
+    /// Return the size of g1 element in this group.
+    [[nodiscard]] int get_g1_size() const;
+
+    /// Return the size of g2 element in this group.
+    [[nodiscard]] int get_g2_size() const;
+
     /**
      * Perform pairing on group elements.
      * @param x an element in G1.
