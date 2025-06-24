@@ -37,6 +37,10 @@ bool Group::check_gt_unity(const Gt& x){
     return gt_is_unity(x.value);
 }
 
+int Group::get_g1_size() const{ return g1_size; }
+
+int Group::get_g2_size() const{ return g2_size; }
+
 Gt Group::pair(const G1& x, const G2& y){
     Gt r;
     pc_map(r.value, x.value, y.value);
