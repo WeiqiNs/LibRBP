@@ -1,11 +1,14 @@
 @PACKAGE_INIT@
 
-include(CMakeFindDependencyMacro)
-
-# Load external dependencies.
-find_dependency(RELIC REQUIRED)
-
-# Load the targets.
 include("${CMAKE_CURRENT_LIST_DIR}/RBPTargets.cmake")
+
+set(RBP_CURVES "@RBP_CURVES@")
+foreach (rbp_component IN LISTS RBP_FIND_COMPONENTS)
+    if (rbp_component IN_LIST RBP_CURVES)
+        set(RBP_${rbp_component}_FOUND TRUE)
+    else ()
+        set(RBP_${rbp_component}_FOUND FALSE)
+    endif ()
+endforeach ()
 
 check_required_components(RBP)
