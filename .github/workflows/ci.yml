@@ -26,7 +26,7 @@ jobs:
           sudo apt install -y build-essential cmake git libgmp-dev libgtest-dev lcov
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Configure a coverage build, fetching RELIC for every curve
         run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DRBP_ENABLE_COVERAGE=ON
@@ -45,15 +45,16 @@ jobs:
           lcov --summary coverage.info --fail-under-lines 100
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.info
+          disable_search: true
           flags: unittests
           fail_ci_if_error: true
 
   package:
-    name: Release build, install and demo
+    name: Optimized build, install and demo
     runs-on: ubuntu-latest
 
     steps:
@@ -63,9 +64,9 @@ jobs:
           sudo apt install -y build-essential cmake git libgmp-dev libgtest-dev
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Configure a release build, fetching RELIC for every curve
+      - name: Configure an optimized build, fetching RELIC for every curve
         run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
