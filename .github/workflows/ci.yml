@@ -1,4 +1,4 @@
-name: Github CI
+name: CI
 
 on:
   push:
@@ -7,8 +7,16 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test-coverage-demo:
+  coverage:
+    name: Tests and coverage
     runs-on: ubuntu-latest
 
     steps:
@@ -20,13 +28,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure with coverage, fetching and building RELIC for every curve
+      - name: Configure a coverage build, fetching RELIC for every curve
         run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DRBP_ENABLE_COVERAGE=ON
 
       - name: Build
         run: cmake --build build --parallel
 
-      - name: Run tests on every curve, including the exported-symbol check
+      - name: Run tests
         run: ctest --test-dir build --output-on-failure
 
       - name: Enforce 100% line coverage
@@ -44,11 +52,31 @@ jobs:
           flags: unittests
           fail_ci_if_error: true
 
-      - name: Build and install a release package
+  package:
+    name: Release build, install and demo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install dependencies
         run: |
-          cmake -B release -S . -DCMAKE_BUILD_TYPE=Release -DRBP_BUILD_TESTS=OFF
-          cmake --build release --parallel
-          sudo cmake --install release
+          sudo apt update
+          sudo apt install -y build-essential cmake git libgmp-dev libgtest-dev
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure a release build, fetching RELIC for every curve
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Run tests on the optimized build
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Install the package
+        run: |
+          sudo cmake --install build
           sudo ldconfig
 
       - name: Build and run the demo against the installed package
