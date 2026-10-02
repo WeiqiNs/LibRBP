@@ -57,7 +57,6 @@ function(rbp_build_relic name)
                 COMMAND ${CMAKE_COMMAND} -DLABEL=${name} ${RBP_RELIC_OPTIONS} .
                 WORKING_DIRECTORY ${binary_dir})
         file(WRITE ${stamp} "${fingerprint}")
-        set(RBP_RELIC_${name}_RECONFIGURED TRUE PARENT_SCOPE)
     endif ()
 
     set(archive ${binary_dir}/lib/librelic_s_${name}.a)
@@ -67,8 +66,10 @@ function(rbp_build_relic name)
             COMMENT "Building RELIC for ${name}"
             VERBATIM
     )
-    add_library(relic_${name} STATIC IMPORTED GLOBAL)
+    add_library(relic_${name} STATIC IMPORTED)
     set_target_properties(relic_${name} PROPERTIES IMPORTED_LOCATION ${archive})
     add_dependencies(relic_${name} relic_${name}_build)
+    string(SUBSTRING ${fingerprint} 0 12 short_fingerprint)
+    set(RBP_RELIC_${name}_FINGERPRINT ${short_fingerprint} PARENT_SCOPE)
     set(RBP_RELIC_${name}_INCLUDE_DIRS ${binary_dir}/include ${relic_SOURCE_DIR}/include PARENT_SCOPE)
 endfunction()

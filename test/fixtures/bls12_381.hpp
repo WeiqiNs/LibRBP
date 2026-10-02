@@ -1,7 +1,8 @@
-#pragma once
+#ifndef RBP_TEST_FIXTURE_BLS12_381_HPP
+#define RBP_TEST_FIXTURE_BLS12_381_HPP
 
 #include "fixture.hpp"
-#include "rbp/bls12_381.hpp"
+#include <rbp/bls12_381.hpp>
 
 template <>
 struct Fixture<rbp::BLS12_381>{
@@ -9,3 +10,5 @@ struct Fixture<rbp::BLS12_381>{
     static constexpr PointFixture g1{49, 4};
     static constexpr PointFixture g2{97, 1};
 };
+
+#endif

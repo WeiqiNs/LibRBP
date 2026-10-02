@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RBP_CORE_HPP
+#define RBP_CORE_HPP
 
 #include <concepts>
 #include <cstddef>
@@ -7,7 +8,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include "rbp/errors.hpp"
+#include "errors.hpp"
 
 #define RBP_API __attribute__((visibility("default")))
 
@@ -46,7 +47,7 @@ namespace rbp{
         [[nodiscard]] Zp pow(std::uint64_t exponent) const;
 
         friend Zp operator+(const Zp& x, const Zp& y){ return x.plus(y); }
-        friend Zp operator-(const Zp& x, const Zp& y){ return x.plus(y.negated()); }
+        friend Zp operator-(const Zp& x, const Zp& y){ return x.minus(y); }
         friend Zp operator*(const Zp& x, const Zp& y){ return x.times(y); }
         friend Zp operator/(const Zp& x, const Zp& y){ return x.times(y.inverse()); }
         friend Zp operator-(const Zp& x){ return x.negated(); }
@@ -64,6 +65,7 @@ namespace rbp{
         static Zp from_unsigned(std::uint64_t value);
 
         [[nodiscard]] Zp plus(const Zp& y) const;
+        [[nodiscard]] Zp minus(const Zp& y) const;
         [[nodiscard]] Zp times(const Zp& y) const;
         [[nodiscard]] Zp negated() const;
         [[nodiscard]] bool equals(const Zp& y) const;
@@ -165,7 +167,9 @@ namespace rbp{
         return total;
     }
 
-    [[nodiscard]] inline Bytes to_bytes(const std::string_view text){
+    [[nodiscard]] inline Bytes bytes_of(const std::string_view text){
         return {text.begin(), text.end()};
     }
 }
+
+#endif

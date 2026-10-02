@@ -1,10 +1,11 @@
-#pragma once
+#ifndef RBP_TEST_FIXTURE_HPP
+#define RBP_TEST_FIXTURE_HPP
 
 #include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string_view>
-#include "rbp/core.hpp"
+#include <rbp/core.hpp>
 
 struct PointFixture{
     std::size_t compressed_size;
@@ -31,3 +32,5 @@ struct PointTraits<rbp::Point<C, S>>{
 
     static constexpr PointFixture fixture = S == rbp::Side::g1 ? Fixture<C>::g1 : Fixture<C>::g2;
 };
+
+#endif

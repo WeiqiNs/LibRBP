@@ -1,6 +1,6 @@
 #include <format>
 #include <sstream>
-#include "curves.hpp"
+#include <curves.hpp>
 
 using namespace rbp;
 

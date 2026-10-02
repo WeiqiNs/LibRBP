@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RBP_ERRORS_HPP
+#define RBP_ERRORS_HPP
 
 #include <stdexcept>
 
@@ -28,3 +29,5 @@ namespace rbp{
         using Error::Error;
     };
 }
+
+#endif

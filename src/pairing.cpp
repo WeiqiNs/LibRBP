@@ -3,6 +3,9 @@
 #include "relic.hpp"
 
 namespace rbp{
+    using detail::raw;
+    using detail::batch_size;
+
     template <class C>
     Gt<C> pair(const G1<C>& p, const G2<C>& q){
         Gt<C> r;

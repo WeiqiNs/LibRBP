@@ -18,7 +18,7 @@ foreach (curve IN LISTS RBP_CURVES)
     if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fixtures/${curve}.hpp)
         message(FATAL_ERROR "Curve '${curve}' has no test fixture: add test/fixtures/${curve}.hpp.")
     endif ()
-    string(APPEND fixture_includes "#include \"fixtures/${curve}.hpp\"\n")
+    string(APPEND fixture_includes "#include <fixtures/${curve}.hpp>\n")
     set(tag rbp::${RBP_CURVE_${curve}_TAG})
     list(APPEND qualified_tags ${tag})
     list(APPEND point_types "rbp::G1<${tag}>" "rbp::G2<${tag}>")
@@ -26,15 +26,18 @@ foreach (curve IN LISTS RBP_CURVES)
 endforeach ()
 list(JOIN qualified_tags ", " tag_list)
 list(JOIN point_types ", " point_list)
-file(CONFIGURE OUTPUT ${RBP_GENERATED_DIR}/test/curves.hpp CONTENT "#pragma once
+file(CONFIGURE OUTPUT ${RBP_GENERATED_DIR}/test/curves.hpp CONTENT "#ifndef RBP_TEST_CURVES_HPP
+#define RBP_TEST_CURVES_HPP
 
 #include <tuple>
 #include <gtest/gtest.h>
-#include \"rbp/rbp.hpp\"
+#include <rbp/rbp.hpp>
 ${fixture_includes}
 using CurveTuple = std::tuple<${tag_list}>;
 using Curves = ::testing::Types<${tag_list}>;
 using Points = ::testing::Types<${point_list}>;
+
+#endif
 ")
 
 set(TEST_SOURCES
@@ -51,7 +54,7 @@ foreach (source IN LISTS TEST_SOURCES)
     get_filename_component(name ${source} NAME_WE)
     add_executable(${name} ${source})
     target_include_directories(${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${RBP_GENERATED_DIR}/test)
-    target_link_libraries(${name} PRIVATE RBP::RBP GTest::gtest GTest::gtest_main)
+    target_link_libraries(${name} PRIVATE RBP::RBP GTest::gtest_main)
     gtest_discover_tests(${name})
 endforeach ()
 

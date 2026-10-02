@@ -1,9 +1,10 @@
-#pragma once
+#ifndef RBP_IO_HPP
+#define RBP_IO_HPP
 
 #include <format>
 #include <ostream>
 #include <string>
-#include "rbp/core.hpp"
+#include "core.hpp"
 
 namespace rbp{
     [[nodiscard]] inline std::string to_hex(const ByteView bytes){
@@ -53,3 +54,5 @@ struct std::formatter<rbp::Gt<C>> : std::formatter<std::string>{
         return std::formatter<std::string>::format(rbp::to_hex(x.to_bytes()), context);
     }
 };
+
+#endif

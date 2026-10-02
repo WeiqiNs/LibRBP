@@ -1,6 +1,8 @@
 #include "relic.hpp"
 
 namespace rbp{
+    using detail::raw;
+
     template <class C> requires C::symmetric
     Gt<C> pair(const G1<C>& p, const G1<C>& q){
         Gt<C> r;

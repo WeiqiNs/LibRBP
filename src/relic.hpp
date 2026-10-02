@@ -1,8 +1,9 @@
-#pragma once
+#ifndef RBP_DETAIL_RELIC_HPP
+#define RBP_DETAIL_RELIC_HPP
 
 #include <new>
 #include <type_traits>
-#include "curve.hpp"
+#include <curve.hpp>
 #include <gmp.h>
 #include <relic.h>
 
@@ -14,7 +15,6 @@ static_assert(ALLOC == AUTO, "LibRBP stores RELIC elements inline and requires A
 static_assert(sizeof(dig_t) == sizeof(std::uint64_t), "LibRBP requires a 64-bit RELIC build");
 
 namespace rbp::detail{
-    using BnElement = bn_st;
     using G1Element = std::remove_extent_t<g1_t>;
     using G2Element = std::remove_extent_t<g2_t>;
     using GtElement = std::remove_extent_t<gt_t>;
@@ -29,7 +29,7 @@ namespace rbp::detail{
     struct RelicElement;
 
     template <class C>
-    struct RelicElement<Zp<C>>{ using type = BnElement; };
+    struct RelicElement<Zp<C>>{ using type = bn_st; };
 
     template <class C>
     struct RelicElement<G1<C>>{ using type = G1Element; };
@@ -65,13 +65,15 @@ namespace rbp::detail{
     };
 }
 
-namespace{
-    constexpr std::size_t batch_size = 256;
+namespace rbp::detail{
+    inline constexpr std::size_t batch_size = 256;
 
     template <class T>
-    auto raw(T& x){ return rbp::detail::Raw::of(x); }
+    auto raw(T& x){ return Raw::of(x); }
 
     inline void clear_relic_error(){ err_get_code(); }
 
     inline bool relic_failed(){ return err_get_code() != RLC_OK; }
 }
+
+#endif

@@ -1,6 +1,8 @@
 #include "relic.hpp"
 
 namespace rbp{
+    using detail::raw;
+
     namespace{
         template <class C>
         const bn_st* order(){ return detail::Runtime<C>::require().order(); }
@@ -101,6 +103,14 @@ namespace rbp{
         Zp r;
         bn_add(raw(r), raw(*this), raw(y));
         if (bn_cmp(raw(r), order<C>()) != RLC_LT) bn_sub(raw(r), raw(r), order<C>());
+        return r;
+    }
+
+    template <class C>
+    Zp<C> Zp<C>::minus(const Zp& y) const{
+        Zp r;
+        bn_sub(raw(r), raw(*this), raw(y));
+        if (bn_sign(raw(r)) == RLC_NEG) bn_add(raw(r), raw(r), order<C>());
         return r;
     }
 

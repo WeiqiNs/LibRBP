@@ -1,6 +1,10 @@
 #include "relic.hpp"
 
 namespace rbp{
+    using detail::raw;
+    using detail::clear_relic_error;
+    using detail::relic_failed;
+
     template <class C>
     Gt<C>::Gt(){
         detail::Runtime<C>::require();

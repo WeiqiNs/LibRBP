@@ -1,11 +1,12 @@
-#pragma once
+#ifndef RBP_DLOG_HPP
+#define RBP_DLOG_HPP
 
 #include <algorithm>
 #include <cstdint>
 #include <optional>
 #include <utility>
 #include <vector>
-#include "rbp/core.hpp"
+#include "core.hpp"
 
 namespace rbp{
     namespace detail{
@@ -83,3 +84,5 @@ namespace rbp{
         return DlogTable<C>(base, lo, hi).find(target);
     }
 }
+
+#endif

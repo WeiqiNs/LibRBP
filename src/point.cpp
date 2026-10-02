@@ -3,6 +3,11 @@
 #include "relic.hpp"
 
 namespace rbp{
+    using detail::raw;
+    using detail::clear_relic_error;
+    using detail::relic_failed;
+    using detail::batch_size;
+
     namespace{
         template <Side S>
         struct Ops;

@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <limits>
-#include "curves.hpp"
+#include <curves.hpp>
 
 using namespace rbp;
 
@@ -79,8 +79,8 @@ TYPED_TEST(ZpTest, EncodingIsFixedWidthBigEndianAndValidated){
 
 TYPED_TEST(ZpTest, HashIsDeterministicAndDomainSeparated){
     using Z = Zp<TypeParam>;
-    const auto message = to_bytes("message");
+    const auto message = bytes_of("message");
     EXPECT_EQ(Z::hash("domain", message), Z::hash("domain", message));
     EXPECT_NE(Z::hash("domain", message), Z::hash("other", message));
-    EXPECT_NE(Z::hash("domain", message), Z::hash("domain", to_bytes("massage")));
+    EXPECT_NE(Z::hash("domain", message), Z::hash("domain", bytes_of("massage")));
 }

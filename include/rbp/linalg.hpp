@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RBP_LINALG_HPP
+#define RBP_LINALG_HPP
 
 #include <cstddef>
 #include <functional>
@@ -7,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-#include "rbp/core.hpp"
+#include "core.hpp"
 
 namespace rbp{
     template <class C>
@@ -225,11 +226,11 @@ namespace rbp{
                 }
                 determinant *= work.at(col, col);
                 const auto scale = work.at(col, col).inverse();
-                for (std::size_t j = 0; j < 2 * n; ++j) work.at(col, j) *= scale;
+                for (std::size_t j = col; j < 2 * n; ++j) work.at(col, j) *= scale;
                 for (std::size_t r = 0; r < n; ++r){
                     if (r == col || work.at(r, col).is_zero()) continue;
                     const auto factor = work.at(r, col);
-                    for (std::size_t j = 0; j < 2 * n; ++j) work.at(r, j) -= factor * work.at(col, j);
+                    for (std::size_t j = col; j < 2 * n; ++j) work.at(r, j) -= factor * work.at(col, j);
                 }
             }
             Matrix inverse(n, n);
@@ -243,3 +244,5 @@ namespace rbp{
         Vector<C> data_;
     };
 }
+
+#endif

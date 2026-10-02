@@ -1,4 +1,4 @@
-#include "curves.hpp"
+#include <curves.hpp>
 
 using namespace rbp;
 
@@ -70,13 +70,13 @@ TYPED_TEST(PointTest, DecodingRejectsInvalidEncodings){
 
 TYPED_TEST(PointTest, HashLandsInTheSubgroupAndSeparatesDomains){
     using P = TypeParam;
-    const auto message = to_bytes("message");
+    const auto message = bytes_of("message");
     const auto h = P::hash("domain", message);
 
     EXPECT_EQ(P::from_bytes(h.to_bytes()), h);
     EXPECT_EQ(P::hash("domain", message), h);
     EXPECT_NE(P::hash("other", message), h);
-    EXPECT_NE(P::hash("domain", to_bytes("massage")), h);
+    EXPECT_NE(P::hash("domain", bytes_of("massage")), h);
 }
 
 TYPED_TEST(PointTest, MsmMatchesTheNaiveSumAcrossBatches){
@@ -108,7 +108,7 @@ TYPED_TEST(SideTest, G1AndG2HashApartEvenOnSymmetricCurves){
     if constexpr (!C::symmetric){
         GTEST_SKIP() << "G1 and G2 are different groups on asymmetric curves";
     } else{
-        const auto message = to_bytes("message");
+        const auto message = bytes_of("message");
         EXPECT_EQ(G1<C>::generator().to_bytes(), G2<C>::generator().to_bytes());
         EXPECT_NE(G1<C>::hash("domain", message).to_bytes(), G2<C>::hash("domain", message).to_bytes());
     }

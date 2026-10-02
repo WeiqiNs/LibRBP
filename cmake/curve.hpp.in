@@ -1,8 +1,9 @@
-#pragma once
+#ifndef RBP_@RBP_TAG@_HPP
+#define RBP_@RBP_TAG@_HPP
 
 #include <cstddef>
 #include <string_view>
-#include "rbp/core.hpp"
+#include <rbp/core.hpp>
 
 namespace rbp{
     struct RBP_API @RBP_TAG@{
@@ -14,3 +15,5 @@ namespace rbp{
         static constexpr std::size_t gt_size = @RBP_GT_SIZE@;
     };
 }
+
+#endif

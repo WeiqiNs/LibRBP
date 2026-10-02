@@ -1,0 +1,9 @@
+#ifndef RBP_RBP_HPP
+#define RBP_RBP_HPP
+
+#include <rbp/core.hpp>
+#include <rbp/dlog.hpp>
+#include <rbp/io.hpp>
+#include <rbp/linalg.hpp>
+@RBP_CURVE_INCLUDES@
+#endif

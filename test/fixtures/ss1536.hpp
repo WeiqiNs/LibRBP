@@ -1,7 +1,8 @@
-#pragma once
+#ifndef RBP_TEST_FIXTURE_SS1536_HPP
+#define RBP_TEST_FIXTURE_SS1536_HPP
 
 #include "fixture.hpp"
-#include "rbp/ss1536.hpp"
+#include <rbp/ss1536.hpp>
 
 template <>
 struct Fixture<rbp::SS1536>{
@@ -9,3 +10,5 @@ struct Fixture<rbp::SS1536>{
     static constexpr PointFixture g1{193, 1};
     static constexpr PointFixture g2{193, 1};
 };
+
+#endif
