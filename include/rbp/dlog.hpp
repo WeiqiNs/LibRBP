@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <utility>
 #include <vector>
 #include "core.hpp"
@@ -63,8 +64,10 @@ namespace rbp{
         using Entry = std::pair<std::uint64_t, std::uint64_t>;
 
         static std::uint64_t fingerprint(const Gt<C>& x){
+            const auto bytes = x.to_bytes();
             std::uint64_t hash = 1469598103934665603ull;
-            for (const auto byte : x.to_bytes()) hash = (hash ^ byte) * 1099511628211ull;
+            for (const auto byte : std::span(bytes).first(std::min<std::size_t>(32, bytes.size())))
+                hash = (hash ^ byte) * 1099511628211ull;
             return hash;
         }
 
