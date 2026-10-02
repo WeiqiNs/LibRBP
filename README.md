@@ -29,6 +29,7 @@ int main(){ return bilinear<rbp::BLS12_381>() && bilinear<rbp::SS1536>() ? 0 : 1
 ## What it provides
 
 - `Zp<C>`: integers mod the group order r, with `+ - * /`, `inverse()`, `pow()`, hashing and fixed-width encoding.
+  Hash functions take bytes; `rbp::bytes_of("text")` converts a string.
 - `G1<C>`, `G2<C>`: additive groups with `+ -`, scalar `*`, `mul_generator` (RELIC's precomputed table), hashing,
   `msm`, `sum`, and validated compressed or uncompressed encodings.
 - `Gt<C>`: the multiplicative target group with `* /`, `pow` and validated encodings. `dlog(base, target, lo, hi)` uses
@@ -47,8 +48,8 @@ multithreading support, and it is meant for research prototypes: it makes no con
 
 ## Building
 
-You need CMake, a C++20 compiler, GMP (`libgmp-dev`) and git. LibRBP fetches RELIC and builds it once per curve;
-GoogleTest is used from the system when available and fetched otherwise.
+LibRBP builds on Linux with CMake, a C++20 compiler, GMP (`libgmp-dev`) and git. LibRBP fetches RELIC and builds it
+once per curve; GoogleTest is used from the system when available and fetched otherwise.
 
 ```bash
 cmake -B build -S .
@@ -67,26 +68,37 @@ cmake --install build
 
 Each curve becomes its own shared library (`RBP::BLS12_381`, `RBP::SS1536`) with its RELIC linked in statically and
 hidden, which is what lets several curves share one process. `RBP::RBP` links every built curve. Each library's soname
-ends in a hash of its element sizes (for example `libRBP_bls12_381.so.0.bcb69e0c`), so a program built against one
+ends in a hash of its element sizes (`libRBP_bls12_381.so.0.<hash>`), so a program built against one
 RELIC layout refuses to load a library rebuilt with another instead of corrupting memory.
 
 ## Using it from another project
+
+After `cmake --install`:
 
 ```cmake
 find_package(RBP REQUIRED COMPONENTS bls12_381 ss1536)
 target_link_libraries(app PRIVATE RBP::RBP)
 ```
 
-`FetchContent` works too: declare this repository and link the same targets. The [demo](demo) folder is a complete
-consumer.
+Or without installing:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(LibRBP GIT_REPOSITORY https://github.com/WeiqiNs/LibRBP.git GIT_TAG main)
+FetchContent_MakeAvailable(LibRBP)
+target_link_libraries(app PRIVATE RBP::RBP)
+```
+
+Both carry the C++20 requirement to `app`. The [demo](demo) folder is a complete consumer.
 
 ## Adding a curve
 
-Register it in `cmake/RBPCurves.cmake` with a lowercase name, a tag type name and the RELIC preset that selects it,
-then add `test/fixtures/<name>.hpp` with the curve's group order, its compressed G1 and G2 sizes, and an encoding of a
-point outside each subgroup (`std::nullopt` when the cofactor is 1). Configure fails with a named error when either is
-missing. Not every RELIC preset works: some x86-64 assembly backends define their low-level symbols without RELIC's
-`LABEL` prefix, so the curve configures but its library fails to link with an undefined `<name>_bn_*_low` symbol.
+Register it in `cmake/RBPCurves.cmake` with `rbp_register_curve(<name> <RELIC preset>)`; the name must be a lowercase
+C identifier and its tag type is the name in uppercase. Then add `test/fixtures/<name>.hpp` with the curve's group
+order, its compressed G1 and G2 sizes, and an encoding of a point outside each subgroup (`std::nullopt` when the
+cofactor is 1). Configure fails with a named error when either is missing. Not every RELIC preset works: some x86-64
+assembly backends define their low-level symbols without RELIC's `LABEL` prefix, so the curve configures but its
+library fails to link with an undefined `<name>_bn_*_low` symbol.
 
 ## Docker
 
