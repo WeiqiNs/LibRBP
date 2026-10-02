@@ -1,89 +1,47 @@
-# Set cmake version.
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.25)
 
-# Project name and language.
 project(
         LibRBP
-        VERSION 0.1
-        DESCRIPTION "This library implements a bilinear pairing group using the RELIC library."
-        LANGUAGES CXX
+        VERSION 0.2
+        DESCRIPTION "Typed C++20 bilinear pairing groups over one or more RELIC curves."
+        LANGUAGES C CXX
 )
 
-# Setup the coverage knob.
-option(ENABLE_CODE_COVERAGE "Build with --coverage flags" OFF)
-if (ENABLE_CODE_COVERAGE)
-    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        add_compile_options(--coverage -O0 -g)
-        add_link_options(--coverage)
-    endif ()
+set(CMAKE_CXX_EXTENSIONS OFF)
+if (PROJECT_IS_TOP_LEVEL AND NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif ()
 
-# Set C++ standard.
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+option(RBP_BUILD_TESTS "Build the LibRBP test suite" ${PROJECT_IS_TOP_LEVEL})
+option(RBP_ENABLE_COVERAGE "Build LibRBP and its tests with --coverage" OFF)
+set(RBP_CURVES "bls12_381;ss1536;bn254" CACHE STRING "Curves to build, from cmake/RBPCurves.cmake")
 
-# Include useful CMake modules.
 include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
+include(cmake/RBPCurves.cmake)
+include(cmake/RBPRelic.cmake)
+find_library(RBP_GMP_LIBRARY gmp REQUIRED)
 
-# Enable unit testing.
-enable_testing()
-
-# Find RELIC dependency.
-find_package(RELIC REQUIRED)
-
-# Find or fetch GoogleTest for unit testing.
-find_package(GTest)
-if (NOT GTest_FOUND)
-    include(FetchContent)
-    FetchContent_Declare(
-            googletest
-            GIT_REPOSITORY https://github.com/google/googletest.git
-            GIT_TAG main
-    )
-    FetchContent_MakeAvailable(googletest)
+if (RBP_ENABLE_COVERAGE)
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
 endif ()
 
-# Add source and test directories.
-add_subdirectory(src)
-add_subdirectory(test)
+set(RBP_GENERATED_DIR ${PROJECT_BINARY_DIR}/generated)
 
-# Define install directory for CMake package files.
-set(RBP_CMAKE_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/RBP")
+add_library(RBP INTERFACE)
+add_library(RBP::RBP ALIAS RBP)
+set(RBP_CURVE_INCLUDES "")
+foreach (curve IN LISTS RBP_CURVES)
+    rbp_add_curve(${curve})
+    target_link_libraries(RBP INTERFACE RBP_${curve})
+    string(APPEND RBP_CURVE_INCLUDES "#include \"${curve}.hpp\"\n")
+endforeach ()
 
-# Install the RBP target.
-install(TARGETS RBP
-        EXPORT RBPTargets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
+configure_file(cmake/rbp.hpp.in ${RBP_GENERATED_DIR}/include/rbp/rbp.hpp @ONLY)
 
-# Install public headers.
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/RBP)
+include(cmake/RBPInstall.cmake)
 
-# Install and export CMake targets.
-install(EXPORT RBPTargets
-        FILE RBPTargets.cmake
-        NAMESPACE RBP::
-        DESTINATION ${RBP_CMAKE_INSTALL_DIR}
-)
-
-# Generate and install package config files.
-configure_package_config_file(cmake/RBPConfig.cmake.in
-        "${CMAKE_CURRENT_BINARY_DIR}/RBPConfig.cmake"
-        INSTALL_DESTINATION ${RBP_CMAKE_INSTALL_DIR}
-)
-
-write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/RBPConfigVersion.cmake"
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY SameMajorVersion
-)
-
-install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/RBPConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/RBPConfigVersion.cmake"
-        DESTINATION ${RBP_CMAKE_INSTALL_DIR}
-)
+if (RBP_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif ()

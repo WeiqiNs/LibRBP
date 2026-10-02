@@ -1,4 +1,4 @@
-name: Github CI
+name: CI
 
 on:
   push:
@@ -7,98 +7,81 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  Asym-Test-Cov-Demo:
+  coverage:
+    name: Tests and coverage
     runs-on: ubuntu-latest
 
     steps:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev cmake lcov
+          sudo apt install -y build-essential cmake git libgmp-dev libgtest-dev lcov
 
-      - name: Checkout RELIC
-        uses: actions/checkout@v4
-        with:
-          repository: relic-toolkit/relic
-          path: relic
+      - name: Checkout repository
+        uses: actions/checkout@v7
 
-      - name: Install RELIC asymmetric curve
-        run: |
-          mkdir relic/build && cd relic/build
-          ../preset/gmp-pbc-bls381.sh ..
-          cmake --build . --parallel
-          sudo cmake --install .
+      - name: Configure a coverage build, fetching RELIC for every curve
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DRBP_ENABLE_COVERAGE=ON
 
-      - name: Checkout main repository
-        uses: actions/checkout@v4
-
-      - name: Configure RBP with coverage flags and build
-        run: |
-          cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DENABLE_CODE_COVERAGE=ON
-          cmake --build build --parallel
+      - name: Build
+        run: cmake --build build --parallel
 
       - name: Run tests
         run: ctest --test-dir build --output-on-failure
 
-      - name: Capture coverage
+      - name: Enforce 100% line coverage
         run: |
-          lcov --ignore-errors mismatch,gcov,unused \
-               --directory build \
-               --capture --output-file coverage.info
-          lcov --extract coverage.info '*/src/**' --output-file coverage.info
+          lcov --capture --directory build --output-file all.info --filter brace,blank \
+               --ignore-errors mismatch,inconsistent,unused,negative
+          lcov --extract all.info "$PWD/src/*" "$PWD/include/rbp/*" --output-file coverage.info --ignore-errors unused
+          lcov --summary coverage.info --fail-under-lines 100
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.info
+          disable_search: true
           flags: unittests
           fail_ci_if_error: true
 
-      - name: Reconfigure RBP without coverage, build, and install
-        run: |
-          rm -rf build && cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --parallel
-          sudo cmake --install build
-
-      - name: Build demo
-        run: |
-          cmake -B demo_build -S demo -DCMAKE_BUILD_TYPE=Release
-          cmake --build demo_build --parallel
-
-      - name: Run demo
-        run: ./demo_build/demo
-
-  Sym-Test:
+  package:
+    name: Optimized build, install and demo
     runs-on: ubuntu-latest
 
     steps:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential libgmp-dev libmpfr-dev libssl-dev cmake
+          sudo apt install -y build-essential cmake git libgmp-dev libgtest-dev
 
-      - name: Checkout RELIC
-        uses: actions/checkout@v4
-        with:
-          repository: relic-toolkit/relic
-          path: relic
+      - name: Checkout repository
+        uses: actions/checkout@v7
 
-      - name: Install RELIC symmetric curve
+      - name: Configure an optimized build, fetching RELIC for every curve
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Run tests on the optimized build
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Install the package
         run: |
-          mkdir relic/build && cd relic/build
-          ../preset/gmp-pbc-ss1536.sh ..
-          cmake --build . --parallel
-          sudo cmake --install .
+          sudo cmake --install build
+          sudo ldconfig
 
-      - name: Checkout main repository
-        uses: actions/checkout@v4
-
-      - name: Configure CMake
-        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
-
-      - name: Build project and run tests
+      - name: Build and run the demo against the installed package
         run: |
-          cmake --build build --parallel
-          ctest
+          cmake -B demo/build -S demo
+          cmake --build demo/build --parallel
+          ./demo/build/demo

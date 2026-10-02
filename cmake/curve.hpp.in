@@ -1,0 +1,19 @@
+#ifndef RBP_@RBP_TAG@_HPP
+#define RBP_@RBP_TAG@_HPP
+
+#include <cstddef>
+#include <string_view>
+#include <rbp/core.hpp>
+
+namespace rbp{
+    struct RBP_API @RBP_TAG@{
+        static constexpr std::string_view name = "@RBP_NAME@";
+        static constexpr bool symmetric = @RBP_SYMMETRIC@;
+        static constexpr std::size_t zp_size = @RBP_ZP_SIZE@;
+        static constexpr std::size_t g1_size = @RBP_G1_SIZE@;
+        static constexpr std::size_t g2_size = @RBP_G2_SIZE@;
+        static constexpr std::size_t gt_size = @RBP_GT_SIZE@;
+    };
+}
+
+#endif

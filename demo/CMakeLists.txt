@@ -1,14 +1,7 @@
-cmake_minimum_required(VERSION 3.20)
-project(LibRBPDemo)
+cmake_minimum_required(VERSION 3.25)
+project(LibRBPDemo LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+find_package(RBP REQUIRED COMPONENTS bls12_381 ss1536 bn254)
 
-# Find the RBP library.
-find_package(RBP REQUIRED)
-
-# Create an executable.
 add_executable(demo demo.cpp)
-
-# Link the executable with the library.
-target_link_libraries(demo PUBLIC RBP::RBP)
+target_link_libraries(demo PRIVATE RBP::RBP)

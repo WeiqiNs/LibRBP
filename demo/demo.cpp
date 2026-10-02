@@ -1,26 +1,29 @@
 #include <iostream>
-#include <RBP/bp.hpp>
+#include <rbp/rbp.hpp>
 
-int main(){
-    std::cout << "Testing import the RBP library..." << std::endl;
+template <class C>
+bool inner_product_in_the_exponent(){
+    using namespace rbp;
+    const auto x = random_vector<C>(10);
+    const auto y = random_vector<C>(10);
 
-    const auto Bp = BP();
-
-    const auto x = Bp.Zp->rand_vec(10);
-    const auto y = Bp.Zp->rand_vec(10);
-
-    const auto g1x = Bp.Gp->g1_raise(x);
-    const auto g1y = Bp.Gp->g1_raise(y);
-
-    const auto g2x = Bp.Gp->g2_raise(x);
-    const auto g2y = Bp.Gp->g2_raise(y);
-
-    if (Group::cmp_gt(Group::pair(g1x, g2y), Group::pair(g1y, g2x))){
-        std::cout << "Pairing successful!" << std::endl;
-    } else{
-        std::cout << "Pairing failed!" << std::endl;
+    std::vector<G1<C>> left;
+    std::vector<G2<C>> right;
+    for (std::size_t i = 0; i < x.size(); ++i) {
+        left.push_back(G1<C>::mul_generator(x[i]));
+        right.push_back(G2<C>::mul_generator(y[i]));
     }
 
-    BP::close();
-    return 0;
+    const bool ok = pair(left, right) == Gt<C>::generator().pow(inner(x, y));
+    std::cout << C::name << (ok ? ": pairing successful" : ": pairing failed") << std::endl;
+    return ok;
+}
+
+template <class... Curves>
+bool on_every_curve(){
+    return (inner_product_in_the_exponent<Curves>() & ...);
+}
+
+int main(){
+    return on_every_curve<rbp::BLS12_381, rbp::SS1536, rbp::BN254>() ? 0 : 1;
 }

@@ -1,0 +1,10 @@
+#ifndef RBP_DETAIL_CURVE_HPP
+#define RBP_DETAIL_CURVE_HPP
+
+#include <rbp/@RBP_NAME@.hpp>
+
+namespace rbp::detail{
+    using Tag = @RBP_TAG@;
+}
+
+#endif
