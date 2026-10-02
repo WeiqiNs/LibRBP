@@ -97,19 +97,3 @@ TYPED_TEST(PointTest, MsmMatchesTheNaiveSumAcrossBatches){
     scalars.pop_back();
     EXPECT_THROW((void)msm(points, scalars), ShapeError);
 }
-
-template <class C>
-class SideTest : public ::testing::Test{};
-
-TYPED_TEST_SUITE(SideTest, Curves);
-
-TYPED_TEST(SideTest, G1AndG2HashApartEvenOnSymmetricCurves){
-    using C = TypeParam;
-    if constexpr (!C::symmetric){
-        GTEST_SKIP() << "G1 and G2 are different groups on asymmetric curves";
-    } else{
-        const auto message = bytes_of("message");
-        EXPECT_EQ(G1<C>::generator().to_bytes(), G2<C>::generator().to_bytes());
-        EXPECT_NE(G1<C>::hash("domain", message).to_bytes(), G2<C>::hash("domain", message).to_bytes());
-    }
-}

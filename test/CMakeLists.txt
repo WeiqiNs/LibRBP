@@ -13,6 +13,7 @@ include(GoogleTest)
 set(fixture_includes "")
 set(qualified_tags "")
 set(point_types "")
+set(symmetric_tags "")
 set(curve_libraries "")
 foreach (curve IN LISTS RBP_CURVES)
     if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fixtures/${curve}.hpp)
@@ -22,10 +23,14 @@ foreach (curve IN LISTS RBP_CURVES)
     set(tag rbp::${RBP_CURVE_${curve}_TAG})
     list(APPEND qualified_tags ${tag})
     list(APPEND point_types "rbp::G1<${tag}>" "rbp::G2<${tag}>")
+    if (RBP_${curve}_SYMMETRIC)
+        list(APPEND symmetric_tags ${tag})
+    endif ()
     list(APPEND curve_libraries $<TARGET_FILE:RBP_${curve}>)
 endforeach ()
 list(JOIN qualified_tags ", " tag_list)
 list(JOIN point_types ", " point_list)
+list(JOIN symmetric_tags ", " symmetric_list)
 file(CONFIGURE OUTPUT ${RBP_GENERATED_DIR}/test/curves.hpp CONTENT "#ifndef RBP_TEST_CURVES_HPP
 #define RBP_TEST_CURVES_HPP
 
@@ -36,6 +41,7 @@ ${fixture_includes}
 using CurveTuple = std::tuple<${tag_list}>;
 using Curves = ::testing::Types<${tag_list}>;
 using Points = ::testing::Types<${point_list}>;
+using SymmetricCurves = ::testing::Types<${symmetric_list}>;
 
 #endif
 ")
@@ -49,6 +55,13 @@ set(TEST_SOURCES
         test_linalg.cpp
         test_io.cpp
 )
+if (symmetric_tags)
+    list(APPEND TEST_SOURCES test_symmetric.cpp)
+endif ()
+list(LENGTH RBP_CURVES curve_count)
+if (curve_count GREATER 1)
+    list(APPEND TEST_SOURCES test_multi_curve.cpp)
+endif ()
 
 foreach (source IN LISTS TEST_SOURCES)
     get_filename_component(name ${source} NAME_WE)

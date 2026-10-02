@@ -36,13 +36,3 @@ TYPED_TEST(PairingTest, MultiPairingIsTheProductAcrossBatches){
     qs.pop_back();
     EXPECT_THROW((void)pair(ps, qs), ShapeError);
 }
-
-TYPED_TEST(PairingTest, SymmetricCurvesPairTwoG1Points){
-    using C = TypeParam;
-    if constexpr (!C::symmetric){
-        GTEST_SKIP() << "only type-1 curves pair G1 with G1";
-    } else{
-        const auto x = Zp<C>::random(), y = Zp<C>::random();
-        EXPECT_EQ(pair(G1<C>::mul_generator(x), G1<C>::mul_generator(y)), Gt<C>::generator().pow(x * y));
-    }
-}
