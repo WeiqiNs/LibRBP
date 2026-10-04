@@ -22,6 +22,10 @@ namespace rbp{
 
     namespace detail{
         struct Raw;
+
+        template <class I>
+        concept Character = std::same_as<I, char> || std::same_as<I, wchar_t> || std::same_as<I, char8_t>
+            || std::same_as<I, char16_t> || std::same_as<I, char32_t>;
     }
 
     template <class C>
@@ -29,10 +33,11 @@ namespace rbp{
     public:
         Zp();
 
-        template <std::signed_integral I> requires (sizeof(I) <= sizeof(std::int64_t))
+        template <std::signed_integral I> requires (!detail::Character<I> && sizeof(I) <= sizeof(std::int64_t))
         Zp(const I value) : Zp(from_signed(value)){}
 
-        template <std::unsigned_integral I> requires (sizeof(I) <= sizeof(std::uint64_t))
+        template <std::unsigned_integral I>
+            requires (!std::same_as<I, bool> && !detail::Character<I> && sizeof(I) <= sizeof(std::uint64_t))
         Zp(const I value) : Zp(from_unsigned(value)){}
 
         [[nodiscard]] static Zp random();
@@ -82,6 +87,14 @@ namespace rbp{
         [[nodiscard]] static Point random();
         [[nodiscard]] static Point hash(std::string_view domain, ByteView message);
         [[nodiscard]] static Point mul_generator(const Zp<C>& scalar);
+
+        template <std::same_as<std::vector<Zp<C>>> V>
+        [[nodiscard]] static std::vector<Point> mul_generator(const V& scalars){
+            std::vector<Point> points;
+            points.reserve(scalars.size());
+            for (const auto& scalar : scalars) points.push_back(mul_generator(scalar));
+            return points;
+        }
         [[nodiscard]] static Point from_bytes(ByteView bytes);
 
         [[nodiscard]] Bytes to_bytes(Encoding encoding = Encoding::compressed) const;

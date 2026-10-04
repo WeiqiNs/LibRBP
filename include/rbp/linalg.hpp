@@ -178,7 +178,11 @@ namespace rbp{
         }
 
         friend Vector<C> operator*(const Vector<C>& x, const Matrix& a){
-            return a.transpose() * x;
+            if (a.rows_ != x.size()) throw ShapeError("vector-matrix product needs one entry per row");
+            Vector<C> r(a.cols_);
+            for (std::size_t k = 0; k < a.rows_; ++k)
+                for (std::size_t j = 0; j < a.cols_; ++j) r[j] += x[k] * a.at(k, j);
+            return r;
         }
 
         friend Matrix operator*(const Matrix& a, const Zp<C>& k){

@@ -5,10 +5,10 @@ RUN apt update && apt install -y git gdb cmake build-essential libgmp-dev libgte
 
 FROM deps AS librbp
 
-ARG RELIC_GIT_TAG=main
+ARG RELIC_GIT_TAG
 COPY . /LibRBP
 WORKDIR /LibRBP
-RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DRBP_RELIC_GIT_TAG=${RELIC_GIT_TAG} \
+RUN cmake -B build -S . -DCMAKE_BUILD_TYPE=Release ${RELIC_GIT_TAG:+-DRBP_RELIC_GIT_TAG=$RELIC_GIT_TAG} \
     && cmake --build build --parallel \
     && ctest --test-dir build --output-on-failure \
     && cmake --install build && ldconfig

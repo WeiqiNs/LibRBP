@@ -7,14 +7,7 @@ bool inner_product_in_the_exponent(){
     const auto x = random_vector<C>(10);
     const auto y = random_vector<C>(10);
 
-    std::vector<G1<C>> left;
-    std::vector<G2<C>> right;
-    for (std::size_t i = 0; i < x.size(); ++i) {
-        left.push_back(G1<C>::mul_generator(x[i]));
-        right.push_back(G2<C>::mul_generator(y[i]));
-    }
-
-    const bool ok = pair(left, right) == Gt<C>::generator().pow(inner(x, y));
+    const bool ok = pair(G1<C>::mul_generator(x), G2<C>::mul_generator(y)) == Gt<C>::generator().pow(inner(x, y));
     std::cout << C::name << (ok ? ": pairing successful" : ": pairing failed") << std::endl;
     return ok;
 }

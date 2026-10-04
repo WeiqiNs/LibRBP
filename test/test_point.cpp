@@ -34,11 +34,18 @@ TYPED_TEST(PointTest, GroupLawsHold){
 TYPED_TEST(PointTest, GeneratorHasTheGroupOrder){
     using P = TypeParam;
     using Z = typename TestFixture::Z;
+    using Curve = typename TestFixture::Curve;
     const auto x = Z::random();
 
     EXPECT_EQ(P::mul_generator(x), P::generator() * x);
     EXPECT_TRUE((P::generator() * Z(-1) + P::generator()).is_identity());
     EXPECT_TRUE(P::mul_generator(Z()).is_identity());
+
+    const auto y = Z::random();
+    EXPECT_EQ(P::mul_generator(Vector<Curve>{x, Z(), y}), (std::vector{P::generator() * x, P(), P::generator() * y}));
+    EXPECT_TRUE(P::mul_generator(Vector<Curve>{}).empty());
+    EXPECT_TRUE(P::mul_generator({}).is_identity());
+    EXPECT_EQ(P::mul_generator({x}), P::generator() * x);
 }
 
 TYPED_TEST(PointTest, EveryEncodingRoundTrips){

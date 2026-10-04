@@ -1,6 +1,6 @@
 include(FetchContent)
 
-set(RBP_RELIC_GIT_TAG "main" CACHE STRING "RELIC branch, tag or commit to build")
+set(RBP_RELIC_GIT_TAG "9fc7356e3c304ec3b0f2f5c34c8ff4a12bac3783" CACHE STRING "RELIC branch, tag or commit to build")
 
 FetchContent_Declare(relic
         GIT_REPOSITORY https://github.com/relic-toolkit/relic.git

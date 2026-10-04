@@ -37,6 +37,7 @@ namespace rbp{
 
     template <class C>
     Zp<C> Zp<C>::hash(const std::string_view domain, const ByteView message){
+        if (domain.size() > 255) throw ShapeError("Zp::hash needs a domain of at most 255 bytes");
         const Bytes tag(domain.begin(), domain.end());
         Bytes wide(byte_size() + 16);
         md_xmd(wide.data(), wide.size(), message.data(), message.size(), tag.data(), tag.size());

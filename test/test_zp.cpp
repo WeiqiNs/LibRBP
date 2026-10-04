@@ -1,5 +1,8 @@
 #include <algorithm>
+#include <cstdint>
 #include <limits>
+#include <string>
+#include <type_traits>
 #include <curves.hpp>
 
 using namespace rbp;
@@ -28,6 +31,9 @@ TYPED_TEST(ZpTest, ArithmeticAgreesWithIntegers){
     EXPECT_EQ(Z(3).pow(5), Z(243));
     EXPECT_EQ(Z(3).pow(0), Z(1));
     EXPECT_EQ(Z(5u), Z(5));
+    static_assert(!std::is_constructible_v<Z, bool> && !std::is_constructible_v<Z, char>);
+    static_assert(!std::is_constructible_v<Z, char8_t> && !std::is_constructible_v<Z, wchar_t>);
+    static_assert(std::is_constructible_v<Z, std::int8_t> && std::is_constructible_v<Z, std::uint8_t>);
 
     Z x = 10;
     x += 4;
@@ -83,4 +89,8 @@ TYPED_TEST(ZpTest, HashIsDeterministicAndDomainSeparated){
     EXPECT_EQ(Z::hash("domain", message), Z::hash("domain", message));
     EXPECT_NE(Z::hash("domain", message), Z::hash("other", message));
     EXPECT_NE(Z::hash("domain", message), Z::hash("domain", bytes_of("massage")));
+
+    const std::string longest(255, 'd');
+    EXPECT_NE(Z::hash(longest, message), Z::hash(longest, bytes_of("massage")));
+    EXPECT_THROW((void)Z::hash(longest + 'd', message), ShapeError);
 }

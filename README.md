@@ -29,9 +29,9 @@ int main(){ return bilinear<rbp::BLS12_381>() && bilinear<rbp::SS1536>() ? 0 : 1
 ## What it provides
 
 - `Zp<C>`: integers mod the group order r, with `+ - * /`, `inverse()`, `pow()`, hashing and fixed-width encoding.
-  Hash functions take bytes; `rbp::bytes_of("text")` converts a string.
-- `G1<C>`, `G2<C>`: additive groups with `+ -`, scalar `*`, `mul_generator` (RELIC's precomputed table), hashing,
-  `msm`, `sum`, and validated compressed or uncompressed encodings.
+  Hash functions take bytes; `rbp::bytes_of("text")` converts a string. `Zp::hash` domains are at most 255 bytes.
+- `G1<C>`, `G2<C>`: additive groups with `+ -`, scalar `*`, `mul_generator` (RELIC's precomputed table) on one scalar
+  or a vector, hashing, `msm`, `sum`, and validated compressed or uncompressed encodings.
 - `Gt<C>`: the multiplicative target group with `* /`, `pow` and validated encodings. `dlog(base, target, lo, hi)` uses
   baby-step giant-step; build a `DlogTable<C>(base, lo, hi)` once to reuse its table across many lookups with the same
   base and range.
@@ -61,7 +61,7 @@ cmake --install build
 | Option | Default | Effect |
 | --- | --- | --- |
 | `RBP_CURVES` | `bls12_381;ss1536;bn254` | Curves to build, from the registry in `cmake/RBPCurves.cmake` |
-| `RBP_RELIC_GIT_TAG` | `main` | RELIC branch, tag or commit; configure prints the resolved commit |
+| `RBP_RELIC_GIT_TAG` | the commit pinned in `cmake/RBPRelic.cmake` | RELIC branch, tag or commit; configure prints the resolved commit |
 | `FETCHCONTENT_SOURCE_DIR_RELIC` | unset | Build from a local RELIC checkout instead of fetching |
 | `RBP_BUILD_TESTS` | on when top-level | Build the test suite |
 | `RBP_ENABLE_COVERAGE` | off | Build with `--coverage` |
