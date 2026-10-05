@@ -64,16 +64,10 @@ cmake --install build
 | Option | Default | Effect |
 | --- | --- | --- |
 | `RBP_CURVES` | `bls12_381;ss1536;bn254` | Curves to build, from the registry in `cmake/RBPCurves.cmake` |
-| `RBP_ARITH` | `auto` | `auto` uses RELIC's x86-64 assembly field arithmetic where the curve's registry entry has it and the build machine supports it; `gmp` uses RELIC's portable GMP backend everywhere |
 | `RBP_RELIC_GIT_TAG` | the commit pinned in `cmake/RBPRelic.cmake` | RELIC branch, tag or commit; configure prints the resolved commit |
 | `FETCHCONTENT_SOURCE_DIR_RELIC` | unset | Build from a local RELIC checkout instead of fetching |
 | `RBP_BUILD_TESTS` | on when top-level | Build the test suite |
 | `RBP_ENABLE_COVERAGE` | off | Build with `--coverage` |
-
-With `RBP_ARITH=auto`, configure prints which RELIC preset each curve uses. The assembly backends roughly halve the
-cost of pairings and group operations, but the BLS12-381 one needs a CPU with BMI2 and ADX and is only chosen when the
-build machine has them, so a library built that way runs only on such CPUs; build with `RBP_ARITH=gmp` for a binary
-that runs on any x86-64 machine.
 
 Each curve becomes its own shared library (`RBP::BLS12_381`, `RBP::SS1536`) with its RELIC linked in statically and
 hidden, which is what lets several curves share one process. `RBP::RBP` links every built curve. Each library's soname

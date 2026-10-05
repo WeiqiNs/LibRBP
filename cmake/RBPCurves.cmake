@@ -3,33 +3,22 @@ include(CheckCSourceCompiles)
 
 set(RBP_REGISTERED_CURVES "")
 
-function(rbp_register_curve name)
-    cmake_parse_arguments(PARSE_ARGV 1 arg "X64_NEEDS_ADX" "PRESET;X64_PRESET" "X64_ALIASES")
+function(rbp_register_curve name preset)
     if (NOT name MATCHES "^[a-z_][a-z0-9_]*$")
         message(FATAL_ERROR "Curve name '${name}' must be a lowercase C identifier, because it becomes a RELIC label.")
     endif ()
     if (name IN_LIST RBP_REGISTERED_CURVES)
         message(FATAL_ERROR "Curve '${name}' is registered twice.")
     endif ()
-    if (NOT arg_PRESET OR arg_UNPARSED_ARGUMENTS)
-        message(FATAL_ERROR "Curve '${name}' needs a PRESET and only the documented options.")
-    endif ()
-    if (NOT arg_X64_PRESET AND (arg_X64_NEEDS_ADX OR arg_X64_ALIASES))
-        message(FATAL_ERROR "Curve '${name}' sets x64 options without an X64_PRESET.")
-    endif ()
     string(TOUPPER ${name} tag)
     set(RBP_REGISTERED_CURVES ${RBP_REGISTERED_CURVES} ${name} PARENT_SCOPE)
     set(RBP_CURVE_${name}_TAG ${tag} PARENT_SCOPE)
-    set(RBP_CURVE_${name}_PRESET ${arg_PRESET} PARENT_SCOPE)
-    set(RBP_CURVE_${name}_X64_PRESET ${arg_X64_PRESET} PARENT_SCOPE)
-    set(RBP_CURVE_${name}_X64_NEEDS_ADX ${arg_X64_NEEDS_ADX} PARENT_SCOPE)
-    set(RBP_CURVE_${name}_X64_ALIASES ${arg_X64_ALIASES} PARENT_SCOPE)
+    set(RBP_CURVE_${name}_PRESET ${preset} PARENT_SCOPE)
 endfunction()
 
-rbp_register_curve(bls12_381 PRESET gmp-pbc-bls381
-        X64_PRESET x64-pbc-bls12-381 X64_NEEDS_ADX X64_ALIASES bn_srsh_low)
-rbp_register_curve(ss1536 PRESET gmp-pbc-ss1536)
-rbp_register_curve(bn254 PRESET gmp-pbc-bn254 X64_PRESET x64-pbc-bn254)
+rbp_register_curve(bls12_381 gmp-pbc-bls381)
+rbp_register_curve(ss1536 gmp-pbc-ss1536)
+rbp_register_curve(bn254 gmp-pbc-bn254)
 
 function(rbp_measure_curve name)
     set(CMAKE_REQUIRED_INCLUDES ${RBP_RELIC_${name}_INCLUDE_DIRS})
@@ -91,7 +80,7 @@ function(rbp_add_curve name)
             ${RBP_RELIC_${name}_INCLUDE_DIRS}
     )
     target_link_libraries(${target} PRIVATE $<BUILD_INTERFACE:relic_${name}> ${RBP_GMP_LIBRARY})
-    target_link_options(${target} PRIVATE -Wl,--exclude-libs,ALL ${RBP_RELIC_${name}_LINK_OPTIONS})
+    target_link_options(${target} PRIVATE -Wl,--exclude-libs,ALL)
     set_target_properties(${target} PROPERTIES
             EXPORT_NAME ${RBP_TAG}
             CXX_VISIBILITY_PRESET hidden

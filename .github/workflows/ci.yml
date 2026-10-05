@@ -31,8 +31,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Configure a coverage build on RELIC's GMP backend, fetching RELIC for every curve
-        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DRBP_ENABLE_COVERAGE=ON -DRBP_ARITH=gmp
+      - name: Configure a coverage build, fetching RELIC for every curve
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DRBP_ENABLE_COVERAGE=ON
 
       - name: Build
         run: cmake --build build --parallel
