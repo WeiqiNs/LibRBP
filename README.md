@@ -1,6 +1,6 @@
 # RELIC based Bilinear Pairing Library (LibRBP)
 
-[![LibRBP CI](https://github.com/WeiqiNs/LibRBP/actions/workflows/ci.yml/badge.svg)](https://github.com/WeiqiNs/LibRBP/actions/workflows/ci.yml)
+[![LibRBP CI](https://github.com/WeiqiNs/LibRBP/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/WeiqiNs/LibRBP/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/WeiqiNs/LibRBP/graph/badge.svg?token=U1HZR28Q1Y)](https://codecov.io/gh/WeiqiNs/LibRBP)
 
 LibRBP is a C++20 library for prototyping pairing-based cryptographic schemes on top of

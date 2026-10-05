@@ -195,7 +195,7 @@ namespace rbp{
             return a * k;
         }
 
-        friend Matrix hcat(const Matrix& a, const Matrix& b){
+        [[nodiscard]] friend Matrix hcat(const Matrix& a, const Matrix& b){
             if (a.rows_ != b.rows_) throw ShapeError("hcat needs matrices with the same number of rows");
             Matrix r(a.rows_, a.cols_ + b.cols_);
             for (std::size_t i = 0; i < a.rows_; ++i){

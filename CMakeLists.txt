@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.25)
 
 project(
         LibRBP
-        VERSION 0.3
+        VERSION 0.1
         DESCRIPTION "Typed C++20 bilinear pairing groups over one or more RELIC curves."
         LANGUAGES C CXX
 )

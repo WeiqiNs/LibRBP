@@ -74,7 +74,7 @@ endforeach ()
 add_test(NAME exported_symbols COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/check_exports.sh ${curve_libraries})
 
 foreach (curve IN LISTS RBP_CURVES)
+    set(soname libRBP_${curve}.so.${PROJECT_VERSION_MAJOR}.${RBP_${curve}_LAYOUT})
     add_test(NAME soname_carries_layout_${curve}
-            COMMAND sh -c "readelf -d \"$1\" | grep -q \"SONAME.*\\[libRBP_${curve}\\.so\\.${PROJECT_VERSION_MAJOR}\\.$2\\]\""
-            sh $<TARGET_FILE:RBP_${curve}> ${RBP_${curve}_LAYOUT})
+            COMMAND sh -c "readelf -d \"$1\" | grep -qF \"[$2]\"" sh $<TARGET_FILE:RBP_${curve}> ${soname})
 endforeach ()
