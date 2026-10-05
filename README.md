@@ -36,6 +36,9 @@ int main(){ return bilinear<rbp::BLS12_381>() && bilinear<rbp::SS1536>() ? 0 : 1
   baby-step giant-step; build a `DlogTable<C>(base, lo, hi)` once to reuse its table across many lookups with the same
   base and range.
 - `pair(p, q)`, the multi-pairing `pair(ps, qs)`, and `pair(p, q)` on two G1 points when `C::symmetric`.
+- `PreparedG2<C>(qs)` precomputes the Miller-loop lines of a fixed G2 vector once; `pair(ps, prepared)` equals
+  `pair(ps, qs)` and is cheaper per pair on embedding-degree-12 curves. A prepared point holds one line per Miller step
+  (about 20 KB on BLS12-381). On SS1536 it falls back to the ordinary multi-pairing.
 - `Vector<C>` and `Matrix<C>`: vector operations, matrix products, transpose, determinant and inverse (Gauss-Jordan with
   pivoting), plus `poly_from_roots`.
 - Typed errors: `ShapeError`, `NotInvertible`, `DecodeError` and `RelicError`, all derived from `rbp::Error`.

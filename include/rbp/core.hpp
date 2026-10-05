@@ -159,10 +159,25 @@ namespace rbp{
     };
 
     template <class C>
+    class RBP_API PreparedG2{
+    public:
+        explicit PreparedG2(std::vector<G2<C>> points);
+
+    private:
+        friend struct detail::Raw;
+
+        std::vector<G2<C>> points_;
+        std::vector<std::uint64_t> lines_;
+    };
+
+    template <class C>
     [[nodiscard]] RBP_API Gt<C> pair(const G1<C>& p, const G2<C>& q);
 
     template <class C>
     [[nodiscard]] RBP_API Gt<C> pair(const std::vector<G1<C>>& ps, const std::vector<G2<C>>& qs);
+
+    template <class C>
+    [[nodiscard]] RBP_API Gt<C> pair(const std::vector<G1<C>>& ps, const PreparedG2<C>& qs);
 
     template <class C> requires C::symmetric
     [[nodiscard]] RBP_API Gt<C> pair(const G1<C>& p, const G1<C>& q);

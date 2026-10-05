@@ -47,6 +47,12 @@ namespace rbp::detail{
             using Pointer = std::conditional_t<std::is_const_v<T>, const Element*, Element*>;
             return std::launder(reinterpret_cast<Pointer>(x.storage_));
         }
+
+        template <class C>
+        static const std::vector<G2<C>>& points(const PreparedG2<C>& prepared){ return prepared.points_; }
+
+        template <class C>
+        static const std::vector<std::uint64_t>& lines(const PreparedG2<C>& prepared){ return prepared.lines_; }
     };
 
     template <class C>

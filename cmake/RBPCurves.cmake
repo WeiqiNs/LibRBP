@@ -74,7 +74,7 @@ function(rbp_add_curve name)
     configure_file(cmake/curve_detail.hpp.in ${RBP_GENERATED_DIR}/private/${name}/curve.hpp @ONLY)
 
     set(target RBP_${name})
-    add_library(${target} SHARED src/runtime.cpp src/zp.cpp src/point.cpp src/gt.cpp src/pairing.cpp)
+    add_library(${target} SHARED src/runtime.cpp src/zp.cpp src/point.cpp src/gt.cpp src/pairing.cpp src/prepared.cpp)
     if (RBP_SYMMETRIC)
         target_sources(${target} PRIVATE src/pairing_symmetric.cpp)
     endif ()

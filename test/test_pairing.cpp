@@ -36,3 +36,40 @@ TYPED_TEST(PairingTest, MultiPairingIsTheProductAcrossBatches){
     qs.pop_back();
     EXPECT_THROW((void)pair(ps, qs), ShapeError);
 }
+
+TYPED_TEST(PairingTest, PreparedPairingMatchesTheMultiPairing){
+    using C = TypeParam;
+    for (const std::size_t k : {1, 2, 7, 257}){
+        SCOPED_TRACE(k);
+        std::vector<G2<C>> qs;
+        for (std::size_t i = 0; i < k; ++i) qs.push_back(G2<C>::random());
+        const PreparedG2 prepared(qs);
+        for (int round = 0; round < 3; ++round){
+            std::vector<G1<C>> ps;
+            for (std::size_t i = 0; i < k; ++i) ps.push_back(G1<C>::random());
+            EXPECT_EQ(pair(ps, prepared), pair(ps, qs));
+        }
+    }
+
+    EXPECT_EQ(pair(std::vector{G1<C>::generator()}, PreparedG2(std::vector{G2<C>::generator()})), Gt<C>::generator());
+    EXPECT_TRUE(pair(std::vector<G1<C>>{}, PreparedG2(std::vector<G2<C>>{})).is_one());
+}
+
+TYPED_TEST(PairingTest, PreparedPairingSkipsIdentitiesAndChecksShape){
+    using C = TypeParam;
+    std::vector<G1<C>> ps;
+    std::vector<G2<C>> qs;
+    for (int i = 0; i < 4; ++i){
+        ps.push_back(G1<C>::random());
+        qs.push_back(G2<C>::random());
+    }
+    qs[0] = G2<C>();
+    ps[2] = G1<C>();
+
+    const PreparedG2 prepared(qs);
+    EXPECT_EQ(pair(ps, prepared), pair(ps, qs));
+    EXPECT_TRUE(pair(ps, PreparedG2(std::vector<G2<C>>(4))).is_one());
+    EXPECT_THROW((void)pair(std::vector(ps.begin(), ps.begin() + 3), prepared), ShapeError);
+    ps.push_back(G1<C>::random());
+    EXPECT_THROW((void)pair(ps, prepared), ShapeError);
+}
