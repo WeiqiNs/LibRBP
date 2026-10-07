@@ -34,11 +34,17 @@ int main(){ return bilinear<rbp::BLS12_381>() && bilinear<rbp::SS1536>() ? 0 : 1
   or a vector, hashing, `msm`, `sum`, and validated compressed or uncompressed encodings.
 - `Gt<C>`: the multiplicative target group with `* /`, `pow` and validated encodings. `dlog(base, target, lo, hi)` uses
   baby-step giant-step; build a `DlogTable<C>(base, lo, hi)` once to reuse its table across many lookups with the same
-  base and range.
+  base and range. The table indexes elements by `fingerprint()`, a 64-bit word that equal elements share, and confirms
+  every candidate with `pow` before returning it.
 - `pair(p, q)`, the multi-pairing `pair(ps, qs)`, and `pair(p, q)` on two G1 points when `C::symmetric`.
 - `PreparedG2<C>(qs)` precomputes the Miller-loop lines of a fixed G2 vector once; `pair(ps, prepared)` equals
   `pair(ps, qs)` and is cheaper per pair on embedding-degree-12 curves. A prepared point holds one line per Miller step
   (about 20 KB on BLS12-381). On SS1536 it falls back to the ordinary multi-pairing.
+- `PairingProduct<C>` collects single pairs, vector pairs and vectors against a `PreparedG2`, and `evaluate()` returns
+  the product of all their pairings. On embedding-degree-12 curves a product with prepared terms, or with more pairs
+  than one RELIC simultaneous pairing takes (`detail::batch_size` in `src/relic.hpp`), runs one shared Miller loop and
+  one final exponentiation. It keeps a pointer to each `PreparedG2` it is given, so a prepared key must outlive every
+  `evaluate()` call. `pair(ps, qs)` and `pair(ps, prepared)` are one-term products.
 - `Vector<C>` and `Matrix<C>`: vector operations, matrix products, transpose, determinant and inverse (Gauss-Jordan with
   pivoting), plus `poly_from_roots`.
 - Typed errors: `ShapeError`, `NotInvertible`, `DecodeError` and `RelicError`, all derived from `rbp::Error`.

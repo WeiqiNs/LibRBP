@@ -37,6 +37,40 @@ TYPED_TEST(PairingTest, MultiPairingIsTheProductAcrossBatches){
     EXPECT_THROW((void)pair(ps, qs), ShapeError);
 }
 
+TYPED_TEST(PairingTest, PairingProductMixesPreparedAndPlainPairs){
+    using C = TypeParam;
+    for (const std::size_t k : {1, 7, 300}){
+        SCOPED_TRACE(k);
+        Zp<C> exponent;
+        const auto random_pairs = [&]{
+            std::pair<std::vector<G1<C>>, std::vector<G2<C>>> pairs;
+            for (std::size_t i = 0; i < k; ++i){
+                const auto a = Zp<C>::random(), b = Zp<C>::random();
+                exponent += a * b;
+                pairs.first.push_back(G1<C>::mul_generator(a));
+                pairs.second.push_back(G2<C>::mul_generator(b));
+            }
+            return pairs;
+        };
+        const auto [plain_ps, plain_qs] = random_pairs();
+        auto [prepared_ps, prepared_qs] = random_pairs();
+        prepared_ps.push_back(G1<C>::random());
+        prepared_qs.push_back(G2<C>());
+        const PreparedG2 prepared(prepared_qs);
+
+        PairingProduct<C> product;
+        product.add(plain_ps, plain_qs);
+        product.add(G1<C>(), G2<C>::random());
+        product.add(prepared_ps, prepared);
+        EXPECT_EQ(product.evaluate(), Gt<C>::generator().pow(exponent));
+    }
+
+    EXPECT_TRUE(PairingProduct<C>().evaluate().is_one());
+    PairingProduct<C> product;
+    EXPECT_THROW(product.add(std::vector<G1<C>>(2), std::vector<G2<C>>(1)), ShapeError);
+    EXPECT_THROW(product.add(std::vector<G1<C>>(2), PreparedG2(std::vector<G2<C>>(1))), ShapeError);
+}
+
 TYPED_TEST(PairingTest, PreparedPairingMatchesTheMultiPairing){
     using C = TypeParam;
     for (const std::size_t k : {1, 2, 7, 257}){

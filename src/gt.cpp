@@ -1,3 +1,4 @@
+#include <cstring>
 #include "relic.hpp"
 
 namespace rbp{
@@ -48,6 +49,14 @@ namespace rbp{
     template <class C>
     bool Gt<C>::is_one() const{
         return gt_is_unity(raw(*this));
+    }
+
+    template <class C>
+    std::uint64_t Gt<C>::fingerprint() const{
+        fp_t first;
+        std::memcpy(first, raw(*this), sizeof(fp_t));
+        fp_norm(first, first);
+        return first[0];
     }
 
     template <class C>

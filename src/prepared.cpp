@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <iterator>
-#include <span>
+#include <memory>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -11,14 +11,59 @@
 #error "prepared pairing needs RELIC's RLC_GT_EMBED"
 #endif
 
+namespace rbp{
+    using detail::raw;
+
+    namespace{
+        void require_one_g2_per_g1(const std::size_t g1_count, const std::size_t g2_count){
+            if (g1_count != g2_count) throw ShapeError("a pairing product needs one G2 point per G1 point");
+        }
+
+        template <class C>
+        Gt<C> map_sim(const std::vector<G1<C>>& ps, const std::vector<G2<C>>& qs){
+            Gt<C> total;
+            for (std::size_t start = 0; start < ps.size(); start += detail::batch_size){
+                const auto count = std::min(detail::batch_size, ps.size() - start);
+                const auto lefts = std::make_unique<g1_t[]>(count);
+                const auto rights = std::make_unique<g2_t[]>(count);
+                for (std::size_t i = 0; i < count; ++i){
+                    g1_copy(lefts[i], raw(ps[start + i]));
+                    g2_copy(rights[i], raw(qs[start + i]));
+                }
+                Gt<C> part;
+                pc_map_sim(raw(part), lefts.get(), rights.get(), count);
+                total *= part;
+            }
+            return total;
+        }
+    }
+
+    template <class C>
+    void PairingProduct<C>::add(const G1<C>& p, const G2<C>& q){
+        ps_.push_back(p);
+        qs_.push_back(q);
+    }
+
+    template <class C>
+    void PairingProduct<C>::add(const std::vector<G1<C>>& ps, const std::vector<G2<C>>& qs){
+        require_one_g2_per_g1(ps.size(), qs.size());
+        ps_.insert(ps_.end(), ps.begin(), ps.end());
+        qs_.insert(qs_.end(), qs.begin(), qs.end());
+    }
+
+    template <class C>
+    void PairingProduct<C>::add(const std::vector<G1<C>>& ps, const PreparedG2<C>& qs){
+        require_one_g2_per_g1(ps.size(), detail::Raw::points(qs).size());
+        prepared_.push_back({.ps = ps, .qs = &qs});
+    }
+}
+
 #if RLC_GT_EMBED == 12
 #if PP_MAP != OATEP || EP_ADD == BASIC
 #error "prepared pairing replays RELIC's projective optimal-ate Miller loop"
 #endif
 
 namespace rbp{
-    using detail::raw;
-
     namespace{
         static_assert(std::is_same_v<dig_t, std::uint64_t>);
 
@@ -116,19 +161,39 @@ namespace rbp{
             ep_t p;
         };
 
+        struct LineSource{
+            std::vector<ActivePoint> active;
+            const std::uint64_t* row;
+            std::size_t stride;
+        };
+
         struct LineReader{
             LineLayout layout;
-            std::span<const ActivePoint> active;
+            std::vector<LineSource> sources;
 
-            void multiply(fp12_t r, const std::uint64_t* row) const{
+            void multiply(fp12_t r){
                 fp12_t line;
                 fp12_zero(line);
-                for (const auto& point : active){
-                    layout.evaluate(line, row + point.index * line_words, point.p);
-                    fp12_mul_dxs(r, r, line);
+                for (auto& source : sources){
+                    for (const auto& point : source.active){
+                        layout.evaluate(line, source.row + point.index * line_words, point.p);
+                        fp12_mul_dxs(r, r, line);
+                    }
+                    source.row += source.stride;
                 }
             }
         };
+
+        template <class C>
+        LineSource line_source(const std::vector<G1<C>>& ps, const PreparedG2<C>& qs){
+            const auto& points = detail::Raw::points(qs);
+            LineSource source{.active = {}, .row = detail::Raw::lines(qs).data(), .stride = points.size() * line_words};
+            for (std::size_t i = 0; i < ps.size(); ++i){
+                if (ps[i].is_identity() || points[i].is_identity()) continue;
+                ep_norm(source.active.emplace_back(ActivePoint{.index = i, .p = {}}).p, raw(ps[i]));
+            }
+            return source;
+        }
 
         MillerSchedule miller_schedule(){
             bn_t a;
@@ -165,39 +230,32 @@ namespace rbp{
     }
 
     template <class C>
-    Gt<C> pair(const std::vector<G1<C>>& ps, const PreparedG2<C>& qs){
-        const auto& points = detail::Raw::points(qs);
-        if (ps.size() != points.size()) throw ShapeError("multi-pairing needs one G2 point per G1 point");
-        std::vector<ActivePoint> active;
-        for (std::size_t i = 0; i < ps.size(); ++i){
-            if (ps[i].is_identity() || points[i].is_identity()) continue;
-            ep_norm(active.emplace_back(ActivePoint{.index = i, .p = {}}).p, raw(ps[i]));
-        }
+    Gt<C> PairingProduct<C>::evaluate() const{
+        if (prepared_.empty() && ps_.size() <= detail::batch_size) return map_sim(ps_, qs_);
+
+        const PreparedG2<C> variable(qs_);
+        LineReader reader{.layout = line_layout(), .sources = {line_source(ps_, variable)}};
+        for (const auto& term : prepared_) reader.sources.push_back(line_source(term.ps, *term.qs));
         Gt<C> result;
-        if (active.empty()) return result;
+        if (std::ranges::all_of(reader.sources, [](const LineSource& source){ return source.active.empty(); })){
+            return result;
+        }
 
         const auto schedule = miller_schedule();
-        const LineReader reader{.layout = line_layout(), .active = active};
-        const auto stride = points.size() * line_words;
-        const auto* row = detail::Raw::lines(qs).data();
-        const auto next_row = [&]{ return std::exchange(row, row + stride); };
         const auto r = raw(result);
         for (std::size_t step = 0; step < schedule.digits.size(); ++step){
             if (step > 0) fp12_sqr(r, r);
-            reader.multiply(r, next_row());
-            if (schedule.digits[step] != 0) reader.multiply(r, next_row());
+            reader.multiply(r);
+            if (schedule.digits[step] != 0) reader.multiply(r);
         }
         if (schedule.negative) fp12_inv_cyc(r, r);
         if (schedule.frobenius_lines){
-            reader.multiply(r, next_row());
-            reader.multiply(r, next_row());
+            reader.multiply(r);
+            reader.multiply(r);
         }
         pp_exp_k12(r, r);
         return result;
     }
-
-    template class PreparedG2<detail::Tag>;
-    template Gt<detail::Tag> pair(const std::vector<G1<detail::Tag>>&, const PreparedG2<detail::Tag>&);
 }
 
 #else
@@ -209,12 +267,21 @@ namespace rbp{
     }
 
     template <class C>
-    Gt<C> pair(const std::vector<G1<C>>& ps, const PreparedG2<C>& qs){
-        return pair(ps, detail::Raw::points(qs));
+    Gt<C> PairingProduct<C>::evaluate() const{
+        auto ps = ps_;
+        auto qs = qs_;
+        for (const auto& term : prepared_){
+            const auto& points = detail::Raw::points(*term.qs);
+            ps.insert(ps.end(), term.ps.begin(), term.ps.end());
+            qs.insert(qs.end(), points.begin(), points.end());
+        }
+        return map_sim(ps, qs);
     }
-
-    template class PreparedG2<detail::Tag>;
-    template Gt<detail::Tag> pair(const std::vector<G1<detail::Tag>>&, const PreparedG2<detail::Tag>&);
 }
 
 #endif
+
+namespace rbp{
+    template class PreparedG2<detail::Tag>;
+    template class PairingProduct<detail::Tag>;
+}

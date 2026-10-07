@@ -53,6 +53,16 @@ TYPED_TEST(GtTest, DecodingRejectsInvalidEncodings){
     EXPECT_THROW((void)T::from_bytes(ByteView(valid).first(valid.size() - 1)), DecodeError);
 }
 
+TYPED_TEST(GtTest, FingerprintIgnoresHowTheElementWasComputed){
+    using T = Gt<TypeParam>;
+    const auto g = T::generator();
+    const auto a = T::random(), b = T::random();
+
+    EXPECT_EQ(g.pow(5).fingerprint(), (g * g * g * g * g).fingerprint());
+    EXPECT_EQ((a * b).fingerprint(), (b * a).fingerprint());
+    EXPECT_EQ(T::from_bytes(a.to_bytes()).fingerprint(), a.fingerprint());
+}
+
 TYPED_TEST(GtTest, DlogFindsEveryExponentInItsInclusiveRange){
     using T = Gt<TypeParam>;
     const auto g = T::generator();

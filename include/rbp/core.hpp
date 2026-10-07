@@ -139,6 +139,7 @@ namespace rbp{
 
         [[nodiscard]] Bytes to_bytes() const;
         [[nodiscard]] bool is_one() const;
+        [[nodiscard]] std::uint64_t fingerprint() const;
         [[nodiscard]] Gt inverse() const;
         [[nodiscard]] Gt pow(const Zp<C>& exponent) const;
 
@@ -168,6 +169,26 @@ namespace rbp{
 
         std::vector<G2<C>> points_;
         std::vector<std::uint64_t> lines_;
+    };
+
+    template <class C>
+    class RBP_API PairingProduct{
+    public:
+        void add(const G1<C>& p, const G2<C>& q);
+        void add(const std::vector<G1<C>>& ps, const std::vector<G2<C>>& qs);
+        void add(const std::vector<G1<C>>& ps, const PreparedG2<C>& qs);
+
+        [[nodiscard]] Gt<C> evaluate() const;
+
+    private:
+        struct PreparedTerm{
+            std::vector<G1<C>> ps;
+            const PreparedG2<C>* qs;
+        };
+
+        std::vector<G1<C>> ps_;
+        std::vector<G2<C>> qs_;
+        std::vector<PreparedTerm> prepared_;
     };
 
     template <class C>

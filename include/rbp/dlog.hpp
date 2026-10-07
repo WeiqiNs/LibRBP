@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <optional>
-#include <span>
 #include <utility>
 #include <vector>
 #include "core.hpp"
@@ -40,7 +39,7 @@ namespace rbp{
             baby_.reserve(steps_);
             Gt<C> power;
             for (std::uint64_t j = 0; j < steps_; ++j){
-                baby_.emplace_back(fingerprint(power), j);
+                baby_.emplace_back(power.fingerprint(), j);
                 power *= base;
             }
             std::ranges::sort(baby_);
@@ -50,7 +49,7 @@ namespace rbp{
             if (base_.is_one()) return target.is_one() ? std::optional(lo_) : std::nullopt;
             auto gamma = target * shift_;
             for (std::uint64_t i = 0; i <= span_ / steps_; ++i){
-                const auto matches = std::ranges::equal_range(baby_, fingerprint(gamma), {}, &Entry::first);
+                const auto matches = std::ranges::equal_range(baby_, gamma.fingerprint(), {}, &Entry::first);
                 for (const auto& entry : matches){
                     const auto k = i * steps_ + entry.second;
                     if (k <= span_ && base_.pow(Zp<C>(detail::offset(lo_, k))) == target) return detail::offset(lo_, k);
@@ -62,14 +61,6 @@ namespace rbp{
 
     private:
         using Entry = std::pair<std::uint64_t, std::uint64_t>;
-
-        static std::uint64_t fingerprint(const Gt<C>& x){
-            const auto bytes = x.to_bytes();
-            std::uint64_t hash = 1469598103934665603ull;
-            for (const auto byte : std::span(bytes).first(std::min<std::size_t>(32, bytes.size())))
-                hash = (hash ^ byte) * 1099511628211ull;
-            return hash;
-        }
 
         Gt<C> base_;
         std::int64_t lo_;
