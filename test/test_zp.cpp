@@ -83,10 +83,10 @@ TYPED_TEST(ZpTest, EncodingIsFixedWidthBigEndianAndValidated){
     EXPECT_THROW((void)Z::from_bytes(short_by_one), DecodeError);
 }
 
-TYPED_TEST(ZpTest, HashIsDeterministicAndDomainSeparated){
+TYPED_TEST(ZpTest, HashMatchesItsKnownAnswerAndSeparatesDomains){
     using Z = Zp<TypeParam>;
     const auto message = bytes_of("message");
-    EXPECT_EQ(Z::hash("domain", message), Z::hash("domain", message));
+    EXPECT_EQ(Z::hash("domain", message).to_string(), Fixture<TypeParam>::known_zp_hash);
     EXPECT_NE(Z::hash("domain", message), Z::hash("other", message));
     EXPECT_NE(Z::hash("domain", message), Z::hash("domain", bytes_of("massage")));
 

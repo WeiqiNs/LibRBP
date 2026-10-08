@@ -7,8 +7,13 @@
 template <>
 struct Fixture<rbp::BLS12_381>{
     static constexpr std::string_view order = "52435875175126190479447740508185965837690552500527637822603658699938581184513";
-    static constexpr PointFixture g1{49, 4};
-    static constexpr PointFixture g2{97, 1};
+    static constexpr std::string_view known_zp_hash = "39245224503410184605118702774372334106859021915978059133672826563654237174764";
+    static constexpr PointFixture g1{49, 4,
+        "0203c7ab33efcfe82a82db673531077e1db86cd56173640011e185122522b89b281b3b8ba02a1a742badf989cc881f8890"
+    };
+    static constexpr PointFixture g2{97, 1,
+        "0219a0930f0eccdcd5c55e5c02c2f06970a916f1b717473b2cb31f68a406148159f4980a6f065fe8fc0b239c81e6d3d6500423bd85968ac8bd8472f09289c8f0f2dab18890a3c3b68b99f7d0669d13d3b0247effaaa63e29ecea176855ed398c11"
+    };
 };
 
 #endif

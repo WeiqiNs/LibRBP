@@ -41,9 +41,9 @@ int main(){ return bilinear<rbp::BLS12_381>() && bilinear<rbp::SS1536>() ? 0 : 1
   `pair(ps, qs)` and is cheaper per pair on embedding-degree-12 curves. A prepared point holds one line per Miller step
   (about 20 KB on BLS12-381). On SS1536 it falls back to the ordinary multi-pairing.
 - `PairingProduct<C>` collects single pairs, vector pairs and vectors against a `PreparedG2`, and `evaluate()` returns
-  the product of all their pairings. On embedding-degree-12 curves a product with prepared terms, or with more pairs
-  than one RELIC simultaneous pairing takes (`detail::batch_size` in `src/relic.hpp`), runs one shared Miller loop and
-  one final exponentiation. It keeps a pointer to each `PreparedG2` it is given, so a prepared key must outlive every
+  the product of all their pairings. On embedding-degree-12 curves every product runs one shared Miller loop and one
+  final exponentiation: plain pairs compute their lines as the loop goes, and prepared vectors read their stored lines
+  at the same steps. It keeps a pointer to each `PreparedG2` it is given, so a prepared key must outlive every
   `evaluate()` call. `pair(ps, qs)` and `pair(ps, prepared)` are one-term products.
 - `Vector<C>` and `Matrix<C>`: vector operations, matrix products, transpose, determinant and inverse (Gauss-Jordan with
   pivoting), plus `poly_from_roots`.
@@ -52,13 +52,25 @@ int main(){ return bilinear<rbp::BLS12_381>() && bilinear<rbp::SS1536>() ? 0 : 1
   encoding, so test failures are readable.
 
 RELIC initializes itself on first use; there is no setup or teardown call. `rbp::seed<C>(bytes)` makes the random
-sequence reproducible for tests and benchmarks. LibRBP is single-threaded, because RELIC is built without
-multithreading support, and it is meant for research prototypes: it makes no constant-time guarantees.
+sequence reproducible for tests and benchmarks.
+
+LibRBP is thread-safe. Each thread gets its own RELIC context the first time it uses a curve, which costs one setup of
+that curve's parameters; the context is freed when the thread exits, after the thread's `thread_local` destructors, so
+those may still use LibRBP. A thread that never uses a curve costs almost nothing (`test/check_tls.sh` bounds the static
+thread-local storage of each library). Const member functions and free functions may run concurrently on shared objects,
+including `PreparedG2`, `PairingProduct::evaluate()` and `DlogTable::find()`, but an object must not be modified while
+another thread uses it. `rbp::seed<C>` seeds only the calling thread's generator; every other thread seeds its own from
+the operating system. LibRBP is meant for research prototypes: it makes no constant-time guarantees.
 
 ## Building
 
 LibRBP builds on Linux with CMake, a C++20 compiler, GMP (`libgmp-dev`) and git. LibRBP fetches RELIC and builds it
 once per curve; GoogleTest is used from the system when available and fetched otherwise.
+
+RELIC keeps its default context in thread-local storage, which would cost every thread a full context per curve. LibRBP
+therefore builds each curve's RELIC from `<build>/relic/<curve>-source`, a view of the RELIC source whose
+`src/relic_core.c` declares that context an ordinary global. The fetched or local RELIC source is never modified, and
+configure fails with a named error if RELIC no longer has the declaration.
 
 ```bash
 cmake -B build -S .
@@ -71,9 +83,10 @@ cmake --install build
 | --- | --- | --- |
 | `RBP_CURVES` | `bls12_381;ss1536;bn254` | Curves to build, from the registry in `cmake/RBPCurves.cmake` |
 | `RBP_RELIC_GIT_TAG` | the commit pinned in `cmake/RBPRelic.cmake` | RELIC branch, tag or commit; configure prints the resolved commit |
-| `FETCHCONTENT_SOURCE_DIR_RELIC` | unset | Build from a local RELIC checkout instead of fetching |
+| `FETCHCONTENT_SOURCE_DIR_RELIC` | unset | Build from a local RELIC checkout instead of fetching; the checkout is never modified |
 | `RBP_BUILD_TESTS` | on when top-level | Build the test suite |
 | `RBP_ENABLE_COVERAGE` | off | Build with `--coverage` |
+| `RBP_ENABLE_TSAN` | off | Build LibRBP, its RELIC and its tests with ThreadSanitizer |
 
 Each curve becomes its own shared library (`RBP::BLS12_381`, `RBP::SS1536`) with its RELIC linked in statically and
 hidden, which is what lets several curves share one process. `RBP::RBP` links every built curve. Each library's soname
@@ -102,12 +115,18 @@ Both carry the C++20 requirement to `app`. The [demo](demo) folder is a complete
 
 ## Adding a curve
 
-Register it in `cmake/RBPCurves.cmake` with `rbp_register_curve(<name> <RELIC preset>)`; the name must be a lowercase
-C identifier and its tag type is the name in uppercase. Then add `test/fixtures/<name>.hpp` with the curve's group
-order, its compressed G1 and G2 sizes, and an encoding of a point outside each subgroup (`std::nullopt` when the
-cofactor is 1). Configure fails with a named error when either is missing. Not every RELIC preset works: some x86-64
-assembly backends define their low-level symbols without RELIC's `LABEL` prefix, so the curve configures but its
-library fails to link with an undefined `<name>_bn_*_low` symbol.
+Register it in `cmake/RBPCurves.cmake` with `rbp_register_curve(<name> <RELIC preset> <BN_PRECI>)`; the name must be a
+lowercase C identifier and its tag type is the name in uppercase. `BN_PRECI` is RELIC's big-integer precision in bits
+and sets the size of every `Zp`. Use the preset's own value when it sets one. Otherwise the field size rounded up to a
+multiple of 64 suffices when G2 lies over Fp2 (embedding degree at most 12); curves with larger embedding degrees need
+more, because RELIC stores their twist cofactors in big integers, so keep RELIC's default of 2048 for them. Too small a
+value does not fail to build: it corrupts memory during RELIC setup and surfaces as a `RelicError` on first use. Then
+add `test/fixtures/<name>.hpp` with the curve's group order, its compressed G1 and G2 sizes, an encoding of a point
+outside each subgroup (`std::nullopt` when the cofactor is 1), and the known hashes of `"message"` under domain
+`"domain"` (`Zp` in decimal, points as the hex of their compressed encoding). Configure fails with a named error when
+either is missing. Not every RELIC preset works: some x86-64 assembly backends define their low-level symbols without
+RELIC's `LABEL` prefix, so the curve configures but its library fails to link with an undefined `<name>_bn_*_low`
+symbol.
 
 ## Docker
 

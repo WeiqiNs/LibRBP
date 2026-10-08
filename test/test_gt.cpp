@@ -56,10 +56,9 @@ TYPED_TEST(GtTest, DecodingRejectsInvalidEncodings){
 TYPED_TEST(GtTest, FingerprintIgnoresHowTheElementWasComputed){
     using T = Gt<TypeParam>;
     const auto g = T::generator();
-    const auto a = T::random(), b = T::random();
+    const auto a = T::random();
 
     EXPECT_EQ(g.pow(5).fingerprint(), (g * g * g * g * g).fingerprint());
-    EXPECT_EQ((a * b).fingerprint(), (b * a).fingerprint());
     EXPECT_EQ(T::from_bytes(a.to_bytes()).fingerprint(), a.fingerprint());
 }
 

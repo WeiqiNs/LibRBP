@@ -54,6 +54,8 @@ set(TEST_SOURCES
         test_pairing.cpp
         test_linalg.cpp
         test_io.cpp
+        test_concurrency.cpp
+        test_thread_keys.cpp
 )
 if (symmetric_tags)
     list(APPEND TEST_SOURCES test_symmetric.cpp)
@@ -72,6 +74,7 @@ foreach (source IN LISTS TEST_SOURCES)
 endforeach ()
 
 add_test(NAME exported_symbols COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/check_exports.sh ${curve_libraries})
+add_test(NAME thread_local_storage COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/check_tls.sh ${curve_libraries})
 
 foreach (curve IN LISTS RBP_CURVES)
     set(soname libRBP_${curve}.so.${PROJECT_VERSION_MAJOR}.${RBP_${curve}_LAYOUT})

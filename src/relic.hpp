@@ -5,10 +5,15 @@
 #include <type_traits>
 #include <curve.hpp>
 #include <gmp.h>
+#include <pthread.h>
 #include <relic.h>
 
 #ifdef CHECK
 #error "LibRBP requires RELIC built with CHECK off: CHECK unwinds with longjmp, which skips C++ destructors"
+#endif
+
+#if !defined(MULTI) || MULTI != PTHREAD
+#error "LibRBP requires RELIC built with MULTI=PTHREAD, so that every thread has its own RELIC context"
 #endif
 
 static_assert(ALLOC == AUTO, "LibRBP stores RELIC elements inline and requires ALLOC=AUTO");
@@ -68,6 +73,7 @@ namespace rbp::detail{
 
         bn_t order_;
         std::size_t order_bytes_;
+        pthread_key_t thread_contexts_;
     };
 }
 

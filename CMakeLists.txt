@@ -14,12 +14,21 @@ endif ()
 
 option(RBP_BUILD_TESTS "Build the LibRBP test suite" ${PROJECT_IS_TOP_LEVEL})
 option(RBP_ENABLE_COVERAGE "Build LibRBP and its tests with --coverage" OFF)
+option(RBP_ENABLE_TSAN "Build LibRBP, its RELIC and its tests with ThreadSanitizer" OFF)
 set(RBP_CURVES "bls12_381;ss1536;bn254" CACHE STRING "Curves to build, from cmake/RBPCurves.cmake")
+
+set(RBP_SANITIZER_FLAGS "")
+if (RBP_ENABLE_TSAN)
+    set(RBP_SANITIZER_FLAGS -fsanitize=thread -g)
+    add_compile_options(${RBP_SANITIZER_FLAGS})
+    add_link_options(-fsanitize=thread)
+endif ()
 
 include(GNUInstallDirs)
 include(cmake/RBPCurves.cmake)
 include(cmake/RBPRelic.cmake)
 find_library(RBP_GMP_LIBRARY gmp REQUIRED)
+find_package(Threads REQUIRED)
 
 if (RBP_ENABLE_COVERAGE)
     add_compile_options(--coverage -O0 -g)

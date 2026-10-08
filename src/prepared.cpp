@@ -18,24 +18,6 @@ namespace rbp{
         void require_one_g2_per_g1(const std::size_t g1_count, const std::size_t g2_count){
             if (g1_count != g2_count) throw ShapeError("a pairing product needs one G2 point per G1 point");
         }
-
-        template <class C>
-        Gt<C> map_sim(const std::vector<G1<C>>& ps, const std::vector<G2<C>>& qs){
-            Gt<C> total;
-            for (std::size_t start = 0; start < ps.size(); start += detail::batch_size){
-                const auto count = std::min(detail::batch_size, ps.size() - start);
-                const auto lefts = std::make_unique<g1_t[]>(count);
-                const auto rights = std::make_unique<g2_t[]>(count);
-                for (std::size_t i = 0; i < count; ++i){
-                    g1_copy(lefts[i], raw(ps[start + i]));
-                    g2_copy(rights[i], raw(qs[start + i]));
-                }
-                Gt<C> part;
-                pc_map_sim(raw(part), lefts.get(), rights.get(), count);
-                total *= part;
-            }
-            return total;
-        }
     }
 
     template <class C>
@@ -71,14 +53,37 @@ namespace rbp{
         constexpr std::size_t fp2_words = 2 * fp_words;
         constexpr std::size_t line_words = 3 * fp2_words;
 
+        enum class LineKind{ doubling, addition, subtraction, frobenius, frobenius_square };
+
         struct MillerSchedule{
             std::vector<std::int8_t> digits;
             bool negative;
             bool frobenius_lines;
 
+            template <class Visitor>
+            void walk(Visitor& visitor) const{
+                for (const auto digit : digits){
+                    visitor.square();
+                    visitor.line(LineKind::doubling);
+                    if (digit > 0) visitor.line(LineKind::addition);
+                    if (digit < 0) visitor.line(LineKind::subtraction);
+                }
+                if (negative) visitor.conjugate();
+                if (!frobenius_lines) return;
+                visitor.line(LineKind::frobenius);
+                visitor.line(LineKind::frobenius_square);
+            }
+
             [[nodiscard]] std::size_t line_count() const{
-                const auto additions = digits.size() - static_cast<std::size_t>(std::ranges::count(digits, 0));
-                return digits.size() + additions + (frobenius_lines ? 2 : 0);
+                struct Counter{
+                    std::size_t lines = 0;
+
+                    void square(){}
+                    void conjugate(){}
+                    void line(LineKind){ ++lines; }
+                } counter;
+                walk(counter);
+                return counter.lines;
             }
         };
 
@@ -104,55 +109,67 @@ namespace rbp{
             }
         };
 
-        struct LineWriter{
-            const MillerSchedule& schedule;
-            LineLayout layout;
-            std::size_t stride;
+        struct LineStepper{
+            ep_t p;
+            ep_t doubling_p;
+            ep2_t q;
+            ep2_t minus_q;
+            ep2_t t;
 
-            void record(const detail::G2Element* point, std::uint64_t* cursor) const{
-                ep_t at_one, doubling_at_one;
-                fp_set_dig(at_one->x, 1);
-                fp_set_dig(at_one->y, 1);
-                fp_set_dig(at_one->z, 1);
-                at_one->coord = BASIC;
-                fp_add(doubling_at_one->x, at_one->x, at_one->x);
-                fp_add(doubling_at_one->x, doubling_at_one->x, at_one->x);
-                fp_neg(doubling_at_one->y, at_one->y);
-                fp_copy(doubling_at_one->z, at_one->z);
-                doubling_at_one->coord = BASIC;
-
-                ep2_t q, minus_q, t;
-                ep2_norm(q, point);
-                ep2_neg(minus_q, q);
-                ep2_copy(t, q);
-                fp12_t line;
-                fp12_zero(line);
-                const auto emit = [&]{
-                    layout.store(cursor, line);
-                    cursor += stride;
-                };
-                for (const auto digit : schedule.digits){
-                    pp_dbl_k12(line, t, t, doubling_at_one);
-                    emit();
-                    if (digit > 0){
-                        pp_add_k12(line, t, q, at_one);
-                        emit();
-                    }
-                    if (digit < 0){
-                        pp_add_k12(line, t, minus_q, at_one);
-                        emit();
-                    }
+            void line(fp12_t out, const LineKind kind){
+                ep2_t frobenius_q;
+                switch (kind){
+                    case LineKind::doubling:
+                        pp_dbl_k12(out, t, t, doubling_p);
+                        return;
+                    case LineKind::addition:
+                        pp_add_k12(out, t, q, p);
+                        return;
+                    case LineKind::subtraction:
+                        pp_add_k12(out, t, minus_q, p);
+                        return;
+                    case LineKind::frobenius:
+                        ep2_frb(frobenius_q, q, 1);
+                        pp_add_k12(out, t, frobenius_q, p);
+                        return;
+                    case LineKind::frobenius_square:
+                        ep2_frb(frobenius_q, q, 2);
+                        ep2_neg(frobenius_q, frobenius_q);
+                        pp_add_k12(out, t, frobenius_q, p);
+                        return;
                 }
-                if (!schedule.frobenius_lines) return;
-                if (schedule.negative) ep2_neg(t, t);
-                ep2_t q1, q2;
-                ep2_frb(q1, q, 1);
-                ep2_frb(q2, q, 2);
-                ep2_neg(q2, q2);
-                pp_add_k12(line, t, q1, at_one);
-                emit();
-                pp_add_k12(line, t, q2, at_one);
-                emit();
+            }
+
+            void conjugate(){ ep2_neg(t, t); }
+        };
+
+        LineStepper line_stepper(const ep_st* p, const detail::G2Element* q){
+            LineStepper stepper;
+            ep_copy(stepper.p, p);
+            ep_copy(stepper.doubling_p, p);
+            fp_add(stepper.doubling_p->x, p->x, p->x);
+            fp_add(stepper.doubling_p->x, stepper.doubling_p->x, p->x);
+            fp_neg(stepper.doubling_p->y, p->y);
+            ep2_norm(stepper.q, q);
+            ep2_neg(stepper.minus_q, stepper.q);
+            ep2_copy(stepper.t, stepper.q);
+            return stepper;
+        }
+
+        struct LineWriter{
+            LineLayout layout;
+            LineStepper stepper;
+            std::uint64_t* cursor;
+            std::size_t stride;
+            fp12_t buffer;
+
+            void square(){}
+            void conjugate(){ stepper.conjugate(); }
+
+            void line(const LineKind kind){
+                stepper.line(buffer, kind);
+                layout.store(cursor, buffer);
+                cursor += stride;
             }
         };
 
@@ -167,19 +184,31 @@ namespace rbp{
             std::size_t stride;
         };
 
-        struct LineReader{
+        struct ProductLoop{
+            detail::GtElement* r;
             LineLayout layout;
-            std::vector<LineSource> sources;
+            std::vector<LineSource> prepared;
+            std::vector<LineStepper> variable;
+            fp12_t buffer;
 
-            void multiply(fp12_t r){
-                fp12_t line;
-                fp12_zero(line);
-                for (auto& source : sources){
+            void square(){ fp12_sqr(r, r); }
+
+            void conjugate(){
+                fp12_inv_cyc(r, r);
+                for (auto& stepper : variable) stepper.conjugate();
+            }
+
+            void line(const LineKind kind){
+                for (auto& source : prepared){
                     for (const auto& point : source.active){
-                        layout.evaluate(line, source.row + point.index * line_words, point.p);
-                        fp12_mul_dxs(r, r, line);
+                        layout.evaluate(buffer, source.row + point.index * line_words, point.p);
+                        fp12_mul_dxs(r, r, buffer);
                     }
                     source.row += source.stride;
+                }
+                for (auto& stepper : variable){
+                    stepper.line(buffer, kind);
+                    fp12_mul_dxs(r, r, buffer);
                 }
             }
         };
@@ -222,38 +251,42 @@ namespace rbp{
     PreparedG2<C>::PreparedG2(std::vector<G2<C>> points) : points_(std::move(points)){
         detail::Runtime<C>::require();
         const auto schedule = miller_schedule();
-        const LineWriter writer{.schedule = schedule, .layout = line_layout(), .stride = points_.size() * line_words};
-        lines_.assign(schedule.line_count() * writer.stride, 0);
+        const auto stride = points_.size() * line_words;
+        lines_.assign(schedule.line_count() * stride, 0);
+        const auto layout = line_layout();
+        ep_t at_one;
+        fp_set_dig(at_one->x, 1);
+        fp_set_dig(at_one->y, 1);
+        fp_set_dig(at_one->z, 1);
+        at_one->coord = BASIC;
         for (std::size_t i = 0; i < points_.size(); ++i){
-            if (!points_[i].is_identity()) writer.record(raw(points_[i]), lines_.data() + i * line_words);
+            if (points_[i].is_identity()) continue;
+            LineWriter writer{
+                .layout = layout, .stepper = line_stepper(at_one, raw(points_[i])),
+                .cursor = lines_.data() + i * line_words, .stride = stride, .buffer = {}
+            };
+            schedule.walk(writer);
         }
     }
 
     template <class C>
     Gt<C> PairingProduct<C>::evaluate() const{
-        if (prepared_.empty() && ps_.size() <= detail::batch_size) return map_sim(ps_, qs_);
-
-        const PreparedG2<C> variable(qs_);
-        LineReader reader{.layout = line_layout(), .sources = {line_source(ps_, variable)}};
-        for (const auto& term : prepared_) reader.sources.push_back(line_source(term.ps, *term.qs));
         Gt<C> result;
-        if (std::ranges::all_of(reader.sources, [](const LineSource& source){ return source.active.empty(); })){
-            return result;
+        ProductLoop loop{.r = raw(result), .layout = line_layout(), .prepared = {}, .variable = {}, .buffer = {}};
+        for (std::size_t i = 0; i < ps_.size(); ++i){
+            if (ps_[i].is_identity() || qs_[i].is_identity()) continue;
+            ep_t p;
+            ep_norm(p, raw(ps_[i]));
+            loop.variable.push_back(line_stepper(p, raw(qs_[i])));
         }
+        for (const auto& term : prepared_){
+            auto source = line_source(term.ps, *term.qs);
+            if (!source.active.empty()) loop.prepared.push_back(std::move(source));
+        }
+        if (loop.prepared.empty() && loop.variable.empty()) return result;
 
-        const auto schedule = miller_schedule();
-        const auto r = raw(result);
-        for (std::size_t step = 0; step < schedule.digits.size(); ++step){
-            if (step > 0) fp12_sqr(r, r);
-            reader.multiply(r);
-            if (schedule.digits[step] != 0) reader.multiply(r);
-        }
-        if (schedule.negative) fp12_inv_cyc(r, r);
-        if (schedule.frobenius_lines){
-            reader.multiply(r);
-            reader.multiply(r);
-        }
-        pp_exp_k12(r, r);
+        miller_schedule().walk(loop);
+        pp_exp_k12(loop.r, loop.r);
         return result;
     }
 }
@@ -275,7 +308,20 @@ namespace rbp{
             ps.insert(ps.end(), term.ps.begin(), term.ps.end());
             qs.insert(qs.end(), points.begin(), points.end());
         }
-        return map_sim(ps, qs);
+        Gt<C> total;
+        for (std::size_t start = 0; start < ps.size(); start += detail::batch_size){
+            const auto count = std::min(detail::batch_size, ps.size() - start);
+            const auto lefts = std::make_unique<g1_t[]>(count);
+            const auto rights = std::make_unique<g2_t[]>(count);
+            for (std::size_t i = 0; i < count; ++i){
+                g1_copy(lefts[i], raw(ps[start + i]));
+                g2_copy(rights[i], raw(qs[start + i]));
+            }
+            Gt<C> part;
+            pc_map_sim(raw(part), lefts.get(), rights.get(), count);
+            total *= part;
+        }
+        return total;
     }
 }
 

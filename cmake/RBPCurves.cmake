@@ -3,22 +3,26 @@ include(CheckCSourceCompiles)
 
 set(RBP_REGISTERED_CURVES "")
 
-function(rbp_register_curve name preset)
+function(rbp_register_curve name preset bn_precision)
     if (NOT name MATCHES "^[a-z_][a-z0-9_]*$")
         message(FATAL_ERROR "Curve name '${name}' must be a lowercase C identifier, because it becomes a RELIC label.")
     endif ()
     if (name IN_LIST RBP_REGISTERED_CURVES)
         message(FATAL_ERROR "Curve '${name}' is registered twice.")
     endif ()
+    if (NOT bn_precision MATCHES "^[1-9][0-9]*$")
+        message(FATAL_ERROR "Curve '${name}' needs its RELIC BN_PRECI in bits, got '${bn_precision}'.")
+    endif ()
     string(TOUPPER ${name} tag)
     set(RBP_REGISTERED_CURVES ${RBP_REGISTERED_CURVES} ${name} PARENT_SCOPE)
     set(RBP_CURVE_${name}_TAG ${tag} PARENT_SCOPE)
     set(RBP_CURVE_${name}_PRESET ${preset} PARENT_SCOPE)
+    set(RBP_CURVE_${name}_BN_PRECISION ${bn_precision} PARENT_SCOPE)
 endfunction()
 
-rbp_register_curve(bls12_381 gmp-pbc-bls381)
-rbp_register_curve(ss1536 gmp-pbc-ss1536)
-rbp_register_curve(bn254 gmp-pbc-bn254)
+rbp_register_curve(bls12_381 gmp-pbc-bls381 384)
+rbp_register_curve(ss1536 gmp-pbc-ss1536 1536)
+rbp_register_curve(bn254 gmp-pbc-bn254 256)
 
 function(rbp_measure_curve name)
     set(CMAKE_REQUIRED_INCLUDES ${RBP_RELIC_${name}_INCLUDE_DIRS})
@@ -79,7 +83,7 @@ function(rbp_add_curve name)
             ${RBP_GENERATED_DIR}/private/${name}
             ${RBP_RELIC_${name}_INCLUDE_DIRS}
     )
-    target_link_libraries(${target} PRIVATE $<BUILD_INTERFACE:relic_${name}> ${RBP_GMP_LIBRARY})
+    target_link_libraries(${target} PRIVATE $<BUILD_INTERFACE:relic_${name}> ${RBP_GMP_LIBRARY} Threads::Threads)
     target_link_options(${target} PRIVATE -Wl,--exclude-libs,ALL)
     set_target_properties(${target} PROPERTIES
             EXPORT_NAME ${RBP_TAG}

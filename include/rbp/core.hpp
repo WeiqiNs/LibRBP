@@ -177,6 +177,7 @@ namespace rbp{
         void add(const G1<C>& p, const G2<C>& q);
         void add(const std::vector<G1<C>>& ps, const std::vector<G2<C>>& qs);
         void add(const std::vector<G1<C>>& ps, const PreparedG2<C>& qs);
+        void add(const std::vector<G1<C>>& ps, const PreparedG2<C>&& qs) = delete;
 
         [[nodiscard]] Gt<C> evaluate() const;
 

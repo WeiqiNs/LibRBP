@@ -52,7 +52,7 @@ namespace rbp{
                 const auto matches = std::ranges::equal_range(baby_, gamma.fingerprint(), {}, &Entry::first);
                 for (const auto& entry : matches){
                     const auto k = i * steps_ + entry.second;
-                    if (k <= span_ && base_.pow(Zp<C>(detail::offset(lo_, k))) == target) return detail::offset(lo_, k);
+                    if (k <= span_ && gamma == base_.pow(Zp<C>(entry.second))) return detail::offset(lo_, k);
                 }
                 gamma *= giant_;
             }
