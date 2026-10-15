@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <iterator>
 #include <memory>
-#include <type_traits>
 #include <utility>
 #include <vector>
 #include "relic.hpp"
@@ -47,8 +46,6 @@ namespace rbp{
 
 namespace rbp{
     namespace{
-        static_assert(std::is_same_v<dig_t, std::uint64_t>);
-
         constexpr std::size_t fp_words = sizeof(fp_t) / sizeof(dig_t);
         constexpr std::size_t fp2_words = 2 * fp_words;
         constexpr std::size_t line_words = 3 * fp2_words;

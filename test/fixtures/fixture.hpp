@@ -11,14 +11,6 @@ struct PointFixture{
     std::size_t compressed_size;
     std::optional<std::uint8_t> off_subgroup_x;
     std::string_view known_hash;
-
-    [[nodiscard]] std::optional<rbp::Bytes> off_subgroup() const{
-        if (!off_subgroup_x) return std::nullopt;
-        rbp::Bytes out(compressed_size, 0);
-        out.front() = 0x02;
-        out.back() = *off_subgroup_x;
-        return out;
-    }
 };
 
 template <class C>

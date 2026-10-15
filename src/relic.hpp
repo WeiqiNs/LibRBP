@@ -75,9 +75,7 @@ namespace rbp::detail{
         std::size_t order_bytes_;
         pthread_key_t thread_contexts_;
     };
-}
 
-namespace rbp::detail{
     inline constexpr std::size_t batch_size = 256;
 
     template <class T>

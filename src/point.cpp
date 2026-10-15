@@ -129,7 +129,6 @@ namespace rbp{
 
     template <class C, Side S>
     Bytes Point<C, S>::to_bytes(const Encoding encoding) const{
-        if (is_identity()) return Bytes{0};
         const bool pack = encoding == Encoding::compressed;
         Bytes out(Ops<S>::size_bin(raw(*this), pack));
         Ops<S>::write_bin(out, raw(*this), pack);

@@ -64,8 +64,12 @@ TYPED_TEST(PointTest, DecodingRejectsInvalidEncodings){
     const auto valid = P::generator().to_bytes();
     ASSERT_EQ(P::from_bytes(valid), P::generator());
 
-    if (const auto off_subgroup = PointTraits<P>::fixture.off_subgroup()){
-        EXPECT_THROW((void)P::from_bytes(*off_subgroup), DecodeError);
+    constexpr auto fixture = PointTraits<P>::fixture;
+    if (fixture.off_subgroup_x){
+        Bytes off_subgroup(fixture.compressed_size, 0);
+        off_subgroup.front() = 0x02;
+        off_subgroup.back() = *fixture.off_subgroup_x;
+        EXPECT_THROW((void)P::from_bytes(off_subgroup), DecodeError);
     }
     EXPECT_THROW((void)P::from_bytes(ByteView(valid).first(valid.size() - 1)), DecodeError);
     EXPECT_THROW((void)P::from_bytes(Bytes{1}), DecodeError);

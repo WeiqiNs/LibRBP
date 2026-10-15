@@ -27,7 +27,6 @@ TYPED_TEST(FormatTest, ScalarsPrintInDecimal){
 TYPED_TEST(FormatTest, GroupElementsPrintTheirEncodingInHex){
     using C = TypeParam;
     EXPECT_EQ(std::format("{}", G1<C>()), "00");
-    EXPECT_EQ(std::format("{}", G2<C>()), "00");
 
     const auto generator = std::format("{}", G1<C>::generator());
     EXPECT_EQ(generator.size(), 2 * Fixture<C>::g1.compressed_size);

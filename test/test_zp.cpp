@@ -7,14 +7,6 @@
 
 using namespace rbp;
 
-namespace{
-    std::string decrement(std::string decimal){
-        EXPECT_NE(decimal.back(), '0');
-        --decimal.back();
-        return decimal;
-    }
-}
-
 template <class C>
 class ZpTest : public ::testing::Test{};
 
@@ -46,7 +38,9 @@ TYPED_TEST(ZpTest, ArithmeticAgreesWithIntegers){
 TYPED_TEST(ZpTest, ValuesReduceModuloTheGroupOrder){
     using C = TypeParam;
     using Z = Zp<C>;
-    const auto r_minus_one = decrement(std::string(Fixture<C>::order));
+    std::string r_minus_one(Fixture<C>::order);
+    EXPECT_NE(r_minus_one.back(), '0');
+    --r_minus_one.back();
 
     EXPECT_EQ(Z(-1).to_string(), r_minus_one);
     EXPECT_TRUE((Z(-1) + 1).is_zero());

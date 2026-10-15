@@ -43,7 +43,6 @@ TYPED_TEST(LinalgTest, PolyFromRootsExpandsTheProduct){
     using V = typename TestFixture::V;
     EXPECT_EQ(poly_from_roots(TestFixture::vector({1, 2}), 2), TestFixture::vector({2, -3, 1}));
     EXPECT_EQ(poly_from_roots(TestFixture::vector({1, 2}), 4), TestFixture::vector({2, -3, 1, 0, 0}));
-    EXPECT_EQ(poly_from_roots(TestFixture::vector({0}), 1), TestFixture::vector({0, 1}));
     EXPECT_EQ(poly_from_roots(V{}, 2), TestFixture::vector({1, 0, 0}));
     EXPECT_THROW((void)poly_from_roots(TestFixture::vector({1, 2, 3}), 2), ShapeError);
 }

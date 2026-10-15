@@ -23,10 +23,6 @@ namespace rbp{
             }
             return root + 1;
         }
-
-        inline std::int64_t offset(const std::int64_t lo, const std::uint64_t k){
-            return static_cast<std::int64_t>(static_cast<std::uint64_t>(lo) + k);
-        }
     }
 
     template <class C>
@@ -52,7 +48,9 @@ namespace rbp{
                 const auto matches = std::ranges::equal_range(baby_, gamma.fingerprint(), {}, &Entry::first);
                 for (const auto& entry : matches){
                     const auto k = i * steps_ + entry.second;
-                    if (k <= span_ && gamma == base_.pow(Zp<C>(entry.second))) return detail::offset(lo_, k);
+                    if (k <= span_ && gamma == base_.pow(Zp<C>(entry.second))){
+                        return static_cast<std::int64_t>(static_cast<std::uint64_t>(lo_) + k);
+                    }
                 }
                 gamma *= giant_;
             }
