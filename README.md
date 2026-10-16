@@ -78,18 +78,3 @@ target_link_libraries(app PRIVATE RBP::RBP)
 
 `RBP_CURVES` picks the curves to build, and `cmake/RBPCurves.cmake` registers new ones. `docker build -t librbp .`
 builds and tests everything from scratch, and [demo](demo) is a complete consumer.
-
-## The PFE family
-
-LibPFE, GoPFE and RustPFE implement the same eight inner-product and quadratic functional encryption
-schemes with the same test cases and benchmark inputs, so the three languages compare like for like; LibRBP is the
-pairing layer under LibPFE.
-
-| Repository | Language | Pairing backend | Role |
-| --- | --- | --- | --- |
-| **LibRBP** (this repo) | C++20 | [RELIC](https://github.com/relic-toolkit/relic) | Typed, thread-safe pairing library: curves, groups, pairings, linear algebra, dlog tables |
-| [LibPFE](https://github.com/WeiqiNs/LibPFE) | C++20 | LibRBP | The eight schemes as header-only templates over any LibRBP curve |
-| [GoPFE](https://github.com/WeiqiNs/GoPFE) | Go | [gnark-crypto](https://github.com/Consensys/gnark-crypto) | The eight schemes on BLS12-381, parallel across `GOMAXPROCS` |
-| [RustPFE](https://github.com/WeiqiNs/RustPFE) | Rust, Python | [arkworks](https://github.com/arkworks-rs/algebra) | The eight schemes in safe Rust over any arkworks pairing curve, with a PyO3 Python binding |
-
-Licensed under Apache-2.0.
