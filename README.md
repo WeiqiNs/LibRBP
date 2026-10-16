@@ -3,15 +3,11 @@
 [![LibRBP CI](https://github.com/WeiqiNs/LibRBP/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/WeiqiNs/LibRBP/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/WeiqiNs/LibRBP/graph/badge.svg?token=U1HZR28Q1Y)](https://codecov.io/gh/WeiqiNs/LibRBP)
 
-LibRBP is a C++20 library for prototyping pairing-based cryptographic schemes on top of
-[RELIC](https://github.com/relic-toolkit/relic). Every curve is a type, so one program can use asymmetric and symmetric
-curves side by side, and generic scheme code is written once as a template.
-
-| Curve | Tag | Pairing | Notes |
-| --- | --- | --- | --- |
-| `bls12_381` | `rbp::BLS12_381` | type-3, embedding degree 12 | The common default |
-| `ss1536` | `rbp::SS1536` | type-1 (symmetric), embedding degree 2 | `pair(G1, G1)` is available |
-| `bn254` | `rbp::BN254` | type-3, embedding degree 12 | About 100-bit security; for comparisons with older work. This is RELIC's BN-254, not Ethereum's alt_bn128 |
+A typed, thread-safe C++20 library for pairing-based cryptography on
+[RELIC](https://github.com/relic-toolkit/relic): bilinear pairings, group and field arithmetic, hashing to curves,
+linear algebra and discrete-log tables on BLS12-381, BN254 and the symmetric SS1536. Every curve is its own type, so
+one program can mix curves and write each scheme once as a template. It is the pairing layer under
+[LibPFE](https://github.com/WeiqiNs/LibPFE), a functional encryption library.
 
 ```cpp
 #include <rbp/rbp.hpp>
@@ -26,51 +22,45 @@ bool bilinear(){
 int main(){ return bilinear<rbp::BLS12_381>() && bilinear<rbp::SS1536>() ? 0 : 1; }
 ```
 
-## What it provides
+The example checks the bilinearity identity e(aP, bQ) = e(P, Q)^ab on two curves. That identity, multiplying two
+secrets "in the exponent" exactly once, is what pairing-based schemes such as BLS signatures, identity-based
+encryption, functional encryption and zk-SNARKs are built on, and the groups `G1`, `G2`, `Gt` and the scalar field
+`Zp` are the vocabulary those papers use.
 
-- `Zp<C>`: integers mod the group order r, with `+ - * /`, `inverse()`, `pow()`, hashing and fixed-width encoding.
-  Hash functions take bytes; `rbp::bytes_of("text")` converts a string. `Zp::hash` domains are at most 255 bytes.
-- `G1<C>`, `G2<C>`: additive groups with `+ -`, scalar `*`, `mul_generator` (RELIC's precomputed table) on one scalar
-  or a vector, hashing, `msm`, `sum`, and validated compressed or uncompressed encodings.
-- `Gt<C>`: the multiplicative target group with `* /`, `pow` and validated encodings. `dlog(base, target, lo, hi)` uses
-  baby-step giant-step; build a `DlogTable<C>(base, lo, hi)` once to reuse its table across many lookups with the same
-  base and range. The table indexes elements by `fingerprint()`, a 64-bit word that equal elements share, and confirms
-  every candidate with `pow` before returning it.
-- `pair(p, q)`, the multi-pairing `pair(ps, qs)`, and `pair(p, q)` on two G1 points when `C::symmetric`.
-- `PreparedG2<C>(qs)` precomputes the Miller-loop lines of a fixed G2 vector once; `pair(ps, prepared)` equals
-  `pair(ps, qs)` and is cheaper per pair on embedding-degree-12 curves. A prepared point holds one line per Miller step
-  (about 20 KB on BLS12-381). On SS1536 it falls back to the ordinary multi-pairing.
-- `PairingProduct<C>` collects single pairs, vector pairs and vectors against a `PreparedG2`, and `evaluate()` returns
-  the product of all their pairings. On embedding-degree-12 curves every product runs one shared Miller loop and one
-  final exponentiation: plain pairs compute their lines as the loop goes, and prepared vectors read their stored lines
-  at the same steps. It keeps a pointer to each `PreparedG2` it is given, so a prepared key must outlive every
-  `evaluate()` call. `pair(ps, qs)` and `pair(ps, prepared)` are one-term products.
-- `Vector<C>` and `Matrix<C>`: vector operations, matrix products, transpose, determinant and inverse (Gauss-Jordan with
-  pivoting), plus `poly_from_roots`.
-- Typed errors: `ShapeError`, `NotInvertible`, `DecodeError` and `RelicError`, all derived from `rbp::Error`.
-- Printing: `std::format("{}", x)` and `operator<<` show scalars in decimal and group elements as the hex of their
-  encoding, so test failures are readable.
+## Highlights
 
-RELIC initializes itself on first use; there is no setup or teardown call. `rbp::seed<C>(bytes)` makes the random
-sequence reproducible for tests and benchmarks.
+- **Several curves in one process.** Each curve is a shared library with its own RELIC linked in and hidden, which a
+  single RELIC build cannot offer.
+- **Thread-safe on top of a single-threaded C library.** Each thread gets a RELIC context the first time it touches a
+  curve, and threads that never do pay nothing. CI runs the suite under ThreadSanitizer with RELIC instrumented too.
+- **Fast repeated pairings.** `PreparedG2` stores a fixed key's Miller-loop lines once, and `PairingProduct` evaluates
+  any mix of plain and prepared pairs in one shared Miller loop with one final exponentiation.
+- **Safe at the boundary.** Every decode checks length and subgroup membership, and errors are typed (`ShapeError`,
+  `DecodeError`, `NotInvertible`, `RelicError`).
+- **100% line coverage**, plus CI checks that no RELIC symbol leaks from a library and that a library rebuilt with a
+  different RELIC layout refuses to load.
 
-LibRBP is thread-safe. Each thread gets its own RELIC context the first time it uses a curve, which costs one setup of
-that curve's parameters; the context is freed when the thread exits, after the thread's `thread_local` destructors, so
-those may still use LibRBP. A thread that never uses a curve costs almost nothing (`test/check_tls.sh` bounds the static
-thread-local storage of each library). Const member functions and free functions may run concurrently on shared objects,
-including `PreparedG2`, `PairingProduct::evaluate()` and `DlogTable::find()`, but an object must not be modified while
-another thread uses it. `rbp::seed<C>` seeds only the calling thread's generator; every other thread seeds its own from
-the operating system. LibRBP is meant for research prototypes: it makes no constant-time guarantees.
+## Curves
 
-## Building
+| Curve | Tag | Pairing |
+| --- | --- | --- |
+| BLS12-381 | `rbp::BLS12_381` | type 3, the common default |
+| SS1536 | `rbp::SS1536` | type 1 (symmetric), so `pair(G1, G1)` works |
+| BN254 | `rbp::BN254` | type 3, about 100-bit security, for comparison with older work |
 
-LibRBP builds on Linux with CMake, a C++20 compiler, GMP (`libgmp-dev`) and git. LibRBP fetches RELIC and builds it
-once per curve; GoogleTest is used from the system when available and fetched otherwise.
+## What's inside
 
-RELIC keeps its default context in thread-local storage, which would cost every thread a full context per curve. LibRBP
-therefore builds each curve's RELIC from `<build>/relic/<curve>-source`, a view of the RELIC source whose
-`src/relic_core.c` declares that context an ordinary global. The fetched or local RELIC source is never modified, and
-configure fails with a named error if RELIC no longer has the declaration.
+- `Zp<C>`, `G1<C>`, `G2<C>`, `Gt<C>` with natural operators, hashing to each group, and validated encodings.
+- `pair`, multi-pairings, `PreparedG2` and `PairingProduct`.
+- `msm`, `mul_generator` on vectors, and `DlogTable` for discrete logarithms over a small range.
+- `Vector<C>` and `Matrix<C>` with products, transpose, determinant and inverse.
+- `std::format` and `operator<<` support, so test failures print readable values.
+
+LibRBP is for research prototypes and makes no constant-time guarantees.
+
+## Build and test
+
+Linux, CMake 3.25+, a C++20 compiler, GMP (`libgmp-dev`) and git. RELIC is fetched and built once per curve.
 
 ```bash
 cmake -B build -S .
@@ -79,56 +69,27 @@ ctest --test-dir build --output-on-failure
 cmake --install build
 ```
 
-| Option | Default | Effect |
-| --- | --- | --- |
-| `RBP_CURVES` | `bls12_381;ss1536;bn254` | Curves to build, from the registry in `cmake/RBPCurves.cmake` |
-| `RBP_RELIC_GIT_TAG` | the commit pinned in `cmake/RBPRelic.cmake` | RELIC branch, tag or commit; configure prints the resolved commit |
-| `FETCHCONTENT_SOURCE_DIR_RELIC` | unset | Build from a local RELIC checkout instead of fetching; the checkout is never modified |
-| `RBP_BUILD_TESTS` | on when top-level | Build the test suite |
-| `RBP_ENABLE_COVERAGE` | off | Build with `--coverage` |
-| `RBP_ENABLE_TSAN` | off | Build LibRBP, its RELIC and its tests with ThreadSanitizer |
-
-Each curve becomes its own shared library (`RBP::BLS12_381`, `RBP::SS1536`) with its RELIC linked in statically and
-hidden, which is what lets several curves share one process. `RBP::RBP` links every built curve. Each library's soname
-ends in a hash of its element sizes (`libRBP_bls12_381.so.0.<hash>`), so a program built against one
-RELIC layout refuses to load a library rebuilt with another instead of corrupting memory.
-
-## Using it from another project
-
-After `cmake --install`:
+Then, from another CMake project:
 
 ```cmake
 find_package(RBP REQUIRED COMPONENTS bls12_381 ss1536)
 target_link_libraries(app PRIVATE RBP::RBP)
 ```
 
-Or without installing:
+`RBP_CURVES` picks the curves to build, and `cmake/RBPCurves.cmake` registers new ones. `docker build -t librbp .`
+builds and tests everything from scratch, and [demo](demo) is a complete consumer.
 
-```cmake
-include(FetchContent)
-FetchContent_Declare(LibRBP GIT_REPOSITORY https://github.com/WeiqiNs/LibRBP.git GIT_TAG main)
-FetchContent_MakeAvailable(LibRBP)
-target_link_libraries(app PRIVATE RBP::RBP)
-```
+## The PFE family
 
-Both carry the C++20 requirement to `app`. The [demo](demo) folder is a complete consumer.
+LibPFE, GoPFE and RustPFE implement the same eight inner-product and quadratic functional encryption
+schemes with the same test cases and benchmark inputs, so the three languages compare like for like; LibRBP is the
+pairing layer under LibPFE.
 
-## Adding a curve
+| Repository | Language | Pairing backend | Role |
+| --- | --- | --- | --- |
+| **LibRBP** (this repo) | C++20 | [RELIC](https://github.com/relic-toolkit/relic) | Typed, thread-safe pairing library: curves, groups, pairings, linear algebra, dlog tables |
+| [LibPFE](https://github.com/WeiqiNs/LibPFE) | C++20 | LibRBP | The eight schemes as header-only templates over any LibRBP curve |
+| [GoPFE](https://github.com/WeiqiNs/GoPFE) | Go | [gnark-crypto](https://github.com/Consensys/gnark-crypto) | The eight schemes on BLS12-381, parallel across `GOMAXPROCS` |
+| [RustPFE](https://github.com/WeiqiNs/RustPFE) | Rust, Python | [arkworks](https://github.com/arkworks-rs/algebra) | The eight schemes in safe Rust over any arkworks pairing curve, with a PyO3 Python binding |
 
-Register it in `cmake/RBPCurves.cmake` with `rbp_register_curve(<name> <RELIC preset> <BN_PRECI>)`; the name must be a
-lowercase C identifier and its tag type is the name in uppercase. `BN_PRECI` is RELIC's big-integer precision in bits
-and sets the size of every `Zp`. Use the preset's own value when it sets one. Otherwise the field size rounded up to a
-multiple of 64 suffices when G2 lies over Fp2 (embedding degree at most 12); curves with larger embedding degrees need
-more, because RELIC stores their twist cofactors in big integers, so keep RELIC's default of 2048 for them. Too small a
-value does not fail to build: it corrupts memory during RELIC setup and surfaces as a `RelicError` on first use. Then
-add `test/fixtures/<name>.hpp` with the curve's group order, its compressed G1 and G2 sizes, an encoding of a point
-outside each subgroup (`std::nullopt` when the cofactor is 1), and the known hashes of `"message"` under domain
-`"domain"` (`Zp` in decimal, points as the hex of their compressed encoding). Configure fails with a named error when
-either is missing. Not every RELIC preset works: some x86-64 assembly backends define their low-level symbols without
-RELIC's `LABEL` prefix, so the curve configures but its library fails to link with an undefined `<name>_bn_*_low`
-symbol.
-
-## Docker
-
-`docker build -t librbp:dev .` builds everything from source, runs the tests, installs the package and builds the demo;
-`docker run --rm librbp:dev` runs the demo on every curve.
+Licensed under Apache-2.0.
