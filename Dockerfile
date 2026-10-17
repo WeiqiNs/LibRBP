@@ -1,6 +1,6 @@
 FROM ubuntu:latest AS deps
 
-RUN apt update && apt install -y git gdb cmake build-essential libgmp-dev libgtest-dev lcov \
+RUN apt update && apt install -y git gdb cmake build-essential libgmp-dev libgtest-dev \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
 FROM deps AS librbp

@@ -6,10 +6,6 @@
 #include <vector>
 #include "relic.hpp"
 
-#ifndef RLC_GT_EMBED
-#error "prepared pairing needs RELIC's RLC_GT_EMBED"
-#endif
-
 namespace rbp{
     using detail::raw;
 

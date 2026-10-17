@@ -141,7 +141,7 @@ namespace rbp{
         }
 
         [[nodiscard]] bool is_identity() const{
-            return rows_ == cols_ && *this == identity(rows_);
+            return *this == identity(rows_);
         }
 
         [[nodiscard]] Zp<C> determinant() const{
