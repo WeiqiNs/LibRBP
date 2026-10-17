@@ -50,7 +50,7 @@ encryption, functional encryption and zk-SNARKs are built on, and the groups `G1
 
 ## What's inside
 
-- `Zp<C>`, `G1<C>`, `G2<C>`, `Gt<C>` with natural operators, hashing to each group, and validated encodings.
+- `Zp<C>`, `G1<C>`, `G2<C>`, `Gt<C>` with natural operators, hashing to `Zp`, `G1` and `G2`, and validated encodings.
 - `pair`, multi-pairings, `PreparedG2` and `PairingProduct`.
 - `msm`, `mul_generator` on vectors, and `DlogTable` for discrete logarithms over a small range.
 - `Vector<C>` and `Matrix<C>` with products, transpose, determinant and inverse.
