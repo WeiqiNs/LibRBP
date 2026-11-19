@@ -170,14 +170,25 @@ namespace rbp{
     Point<C, S> msm(const std::vector<Point<C, S>>& points, const std::vector<Zp<C>>& scalars){
         if (points.size() != scalars.size()) throw ShapeError("msm needs one scalar per point");
         Point<C, S> total;
+        const auto* order = detail::Runtime<C>::require().order();
+        bn_t half;
+        bn_new(half);
+        bn_rsh(half, order, 1);
         for (std::size_t start = 0; start < points.size(); start += batch_size){
             const auto count = std::min(batch_size, points.size() - start);
             const auto bases = std::make_unique<typename Ops<S>::Array[]>(count);
             const auto exponents = std::make_unique<bn_t[]>(count);
             for (std::size_t i = 0; i < count; ++i){
-                Ops<S>::copy(bases[i], raw(points[start + i]));
                 bn_new(exponents[i]);
-                bn_copy(exponents[i], raw(scalars[start + i]));
+                const auto* scalar = raw(scalars[start + i]);
+                if (bn_cmp(scalar, half) == RLC_GT){
+                    Ops<S>::neg(bases[i], raw(points[start + i]));
+                    bn_sub(exponents[i], order, scalar);
+                }
+                else{
+                    Ops<S>::copy(bases[i], raw(points[start + i]));
+                    bn_copy(exponents[i], scalar);
+                }
             }
             Point<C, S> part;
             Ops<S>::mul_sim_lot(raw(part), bases.get(), exponents.get(), count);
