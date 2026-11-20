@@ -30,7 +30,7 @@ namespace rbp{
     public:
         DlogTable(const Gt<C>& base, const std::int64_t lo, const std::int64_t hi)
             : base_(base), lo_(lo), span_(detail::dlog_span(lo, hi)), steps_(detail::baby_step_count(span_)),
-              shift_(base.pow(-Zp<C>(lo))), giant_(base.pow(-Zp<C>(steps_))){
+              shift_(lo < 0 ? base.pow(Zp<C>(0 - static_cast<std::uint64_t>(lo))) : base.pow(Zp<C>(lo)).inverse()){
             if (base.is_one()) return;
             baby_.reserve(steps_);
             Gt<C> power;
@@ -38,6 +38,7 @@ namespace rbp{
                 baby_.emplace_back(power.fingerprint(), j);
                 power *= base;
             }
+            giant_ = power.inverse();
             std::ranges::sort(baby_);
         }
 
