@@ -32,7 +32,7 @@ OIDC. lcov must match the gcov of the compiler that built `build/`.
 ## Layout
 
 - `include/rbp/core.hpp`: `Zp<C>`, `Point<C, Side>` (`G1`, `G2`), `Gt<C>`, `PreparedG2<C>`, `PairingProduct<C>`, `pair`,
-  `msm`, `seed`, declared only. `errors.hpp`: `Error` subclasses. `linalg.hpp` (`Vector`, `Matrix`), `dlog.hpp`
+  `msm`, `seed`, declared only; `sum`, `bytes_of`, the vector `mul_generator` and the operators are inline. `errors.hpp`: `Error` subclasses. `linalg.hpp` (`Vector`, `Matrix`), `dlog.hpp`
   (`DlogTable`), `io.hpp` (`to_hex`, `operator<<`, `std::formatter`): header-only templates over that API.
 - `src/relic.hpp`: the only RELIC-facing header; checks RELIC's build options and sizes against `detail::Tag` and
   defines `detail::Raw`, `detail::Runtime<C>`, `detail::batch_size`. `src/*.cpp`: one file per area; `point.cpp`'s
