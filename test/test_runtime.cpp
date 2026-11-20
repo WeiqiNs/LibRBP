@@ -1,4 +1,5 @@
 #include <thread>
+#include <pthread.h>
 #include <curves.hpp>
 
 using namespace rbp;
@@ -56,6 +57,23 @@ TYPED_TEST(RuntimeTest, ThreadLocalDestructorsCanStillUseTheCurve){
         thread_local const PairsOnExit pairs_on_exit{result};
         (void)Zp<C>::random();
     }).join();
+
+    EXPECT_EQ(result, pair(G1<C>::generator(), G2<C>::generator()));
+}
+
+TYPED_TEST(RuntimeTest, KeyDestructorsRegisteredLaterCanStillUseTheCurve){
+    using C = TypeParam;
+    (void)Zp<C>::random();
+    pthread_key_t late;
+    ASSERT_EQ(pthread_key_create(&late, [](void* out){
+        *static_cast<Gt<C>*>(out) = pair(G1<C>::generator(), G2<C>::generator());
+    }), 0);
+    Gt<C> result;
+    std::thread([&]{
+        (void)Zp<C>::random();
+        pthread_setspecific(late, &result);
+    }).join();
+    pthread_key_delete(late);
 
     EXPECT_EQ(result, pair(G1<C>::generator(), G2<C>::generator()));
 }
