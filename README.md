@@ -38,8 +38,8 @@ encryption, functional encryption and zk-SNARKs are built on, and the groups `G1
   exponentiation.
 - **Safe at the boundary.** Every decode checks length and subgroup membership, and errors are typed (`ShapeError`,
   `DecodeError`, `NotInvertible`, `RelicError`).
-- **100% line coverage**, plus CI checks that no RELIC symbol leaks from a library and that a library rebuilt with a
-  different RELIC layout refuses to load.
+- **100% line coverage**, plus CI checks that no RELIC symbol leaks from a library. Each library's SONAME carries a
+  hash of its RELIC layout, so one rebuilt with a different layout refuses to load under binaries built for the old.
 
 ## Curves
 

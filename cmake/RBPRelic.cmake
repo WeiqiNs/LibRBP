@@ -55,10 +55,11 @@ function(rbp_build_relic name)
         file(SHA256 ${input} digest)
         string(APPEND relic_configuration ${digest})
     endforeach ()
-    set(options ${RBP_RELIC_OPTIONS} -DBN_PRECI=${RBP_CURVE_${name}_BN_PRECISION})
+    set(options -DLABEL=${name} ${RBP_RELIC_OPTIONS} -DBN_PRECI=${RBP_CURVE_${name}_BN_PRECISION})
     list(JOIN RBP_SANITIZER_FLAGS " " sanitizer_flags)
-    string(SHA256 fingerprint
-            "${relic_configuration};${options};${RBP_RELIC_CORE_DIGEST};${CMAKE_C_COMPILER};${sanitizer_flags}")
+    file(SHA256 ${CMAKE_CURRENT_FUNCTION_LIST_FILE} recipe_digest)
+    string(SHA256 fingerprint "${relic_configuration};${options};${RBP_RELIC_CORE_DIGEST};${CMAKE_C_COMPILER};\
+${sanitizer_flags};${RBP_RELIC_COMMIT};${recipe_digest}")
     if (EXISTS ${stamp})
         file(READ ${stamp} previous)
     endif ()
@@ -76,7 +77,7 @@ function(rbp_build_relic name)
                 WORKING_DIRECTORY ${binary_dir})
         load_cache(${binary_dir} READ_WITH_PREFIX preset_ CFLAGS)
         rbp_run("RELIC options for ${name}"
-                COMMAND ${CMAKE_COMMAND} -DLABEL=${name} ${options} "-DCFLAGS=${preset_CFLAGS} ${sanitizer_flags}" .
+                COMMAND ${CMAKE_COMMAND} ${options} "-DCFLAGS=${preset_CFLAGS} ${sanitizer_flags}" .
                 WORKING_DIRECTORY ${binary_dir})
         file(WRITE ${stamp} "${fingerprint}")
     endif ()

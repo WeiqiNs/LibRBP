@@ -7,8 +7,9 @@ subproject `PROJECT_IS_TOP_LEVEL` is false, so tests are off and the build type 
 
 ## Commands
 
-CI (`.github/workflows/ci.yml`) installs `build-essential cmake git libgmp-dev libgtest-dev lcov`. Configure fetches
-RELIC at `RBP_RELIC_GIT_TAG` and configures one RELIC per curve under `<build>/relic/<curve>`, so the first is slow.
+CI (`.github/workflows/ci.yml`) installs `build-essential cmake git libgmp-dev libgtest-dev`, plus `lcov` in the
+coverage job. Configure fetches RELIC at `RBP_RELIC_GIT_TAG` and configures one RELIC per curve under
+`<build>/relic/<curve>`, so the first is slow.
 
 ```bash
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DRBP_ENABLE_COVERAGE=ON      # coverage job
@@ -32,8 +33,9 @@ OIDC. lcov must match the gcov of the compiler that built `build/`.
 ## Layout
 
 - `include/rbp/core.hpp`: `Zp<C>`, `Point<C, Side>` (`G1`, `G2`), `Gt<C>`, `PreparedG2<C>`, `PairingProduct<C>`, `pair`,
-  `msm`, `seed`, declared only; `sum`, `bytes_of`, the vector `mul_generator` and the operators are inline. `errors.hpp`: `Error` subclasses. `linalg.hpp` (`Vector`, `Matrix`), `dlog.hpp`
-  (`DlogTable`), `io.hpp` (`to_hex`, `operator<<`, `std::formatter`): header-only templates over that API.
+  `msm`, `seed`, declared only; `sum`, `bytes_of`, the vector `mul_generator` and the operators are inline.
+  `errors.hpp`: `Error` subclasses. `linalg.hpp` (`Vector`, `Matrix`), `dlog.hpp` (`DlogTable`), `io.hpp` (`to_hex`,
+  `operator<<`, `std::formatter`): header-only templates over that API.
 - `src/relic.hpp`: the only RELIC-facing header; checks RELIC's build options and sizes against `detail::Tag` and
   defines `detail::Raw`, `detail::Runtime<C>`, `detail::batch_size`. `src/*.cpp`: one file per area; `point.cpp`'s
   `Ops<Side>` maps to RELIC's `g1_`/`g2_` calls; `pairing_symmetric.cpp` (`pair(G1, G1)`) builds only for symmetric
@@ -53,10 +55,10 @@ OIDC. lcov must match the gcov of the compiler that built `build/`.
 - Each `src/*.cpp` compiles once per curve and ends in explicit instantiations over `detail::Tag`. A new member of an
   instantiated class needs nothing more; a new free function in `core.hpp` needs its own instantiation line, or
   consumers fail to link.
-- New curve: `rbp_register_curve(<name> <RELIC preset> <BN_PRECI>)` plus `test/fixtures/<name>.hpp` (configure fails
-  without it; fields in `test/fixtures/fixture.hpp`); `RBP_CURVES`' default, `demo/` and `README.md` name curves too.
-  `BN_PRECI` sizes every `Zp`; existing entries use the preset's `BN_PRECI`, else `FP_PRIME` rounded up to 64 bits. Too
-  small a value still builds and corrupts memory at run time.
+- New curve: `rbp_register_curve(<name> <RELIC preset> <BN_PRECI>)` plus `test/fixtures/<name>.hpp` (configure with
+  tests fails without it; fields in `test/fixtures/fixture.hpp`); `RBP_CURVES`' default, `demo/` and `README.md` name
+  curves too. `BN_PRECI` sizes every `Zp`; existing entries use the preset's `BN_PRECI`, else `FP_PRIME` rounded up to
+  64 bits. Too small a value still builds and corrupts memory at run time.
 - New test file: add it to `TEST_SOURCES` and `TYPED_TEST_SUITE` over a type list from `<curves.hpp>`.
 
 ## Design facts
@@ -64,10 +66,13 @@ OIDC. lcov must match the gcov of the compiler that built `build/`.
 - Curves coexist: each RELIC is built with `LABEL=<curve>` and linked with `--exclude-libs,ALL` into a hidden-visibility
   library. Pinned by ctest `exported_symbols` and `MultiCurveTest.CurvesKeepIndependentState`.
 - The SONAME version is `<major>.<layout>`, a hash of the measured sizes and symmetry, so a library rebuilt with another
-  RELIC layout will not load under stale headers. Pinned by ctest `soname_carries_layout_<curve>`.
+  RELIC layout will not load binaries built against the old one. ctest `soname_carries_layout_<curve>` checks only that
+  the SONAME carries the layout variable, not what the hash covers.
 - The fetched RELIC is never edited: `rbp_build_relic` builds from a symlink view whose `src/relic_core.c` makes
   `first_ctx` an ordinary global (configure fails if that line moves), so threads that never use a curve reserve no
-  context; ctest `thread_local_storage` bounds static TLS. RELIC is reconfigured only when its fingerprint changes.
+  context; ctest `thread_local_storage` bounds static TLS. RELIC is reconfigured only when its fingerprint changes:
+  options, compiler, sanitizer flags, RELIC commit, RELIC's configure inputs and `cmake/RBPRelic.cmake` itself; a RELIC
+  source file added without any of those changing is missed.
 - `detail::Runtime<C>` is the only `core_set` caller: the first thread keeps `first_ctx`; others get a heap context via
   `core_set_thread_initializer`, owned by a pthread key and freed after `thread_local` destructors. `seed<C>` reseeds
   only the calling thread. Pinned by `test_runtime.cpp`, `test_thread_keys.cpp`, `test_concurrency.cpp`.
@@ -85,6 +90,7 @@ OIDC. lcov must match the gcov of the compiler that built `build/`.
 
 ## CI
 
-On push and pull request to `main`: **coverage** (Debug ctest, 100% line coverage of `src/`, `include/rbp/`; Codecov),
-**package** (Release ctest, install, demo against the installed package) and **thread-sanitizer** (LibRBP and RELIC
-instrumented, verified with `nm` for `__tsan_func_entry`, then the whole suite with `halt_on_error=1`).
+On push and pull request to `main`, and on manual dispatch: **coverage** (Debug ctest, 100% line coverage of `src/`,
+`include/rbp/`; Codecov), **package** (Release ctest, install, demo against the installed package) and
+**thread-sanitizer** (LibRBP and RELIC instrumented, verified with `nm` for `__tsan_func_entry`, then the whole suite
+with `halt_on_error=1`).
