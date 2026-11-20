@@ -1,3 +1,5 @@
+#include <cstddef>
+#include <limits>
 #include <curves.hpp>
 
 using namespace rbp;
@@ -45,6 +47,7 @@ TYPED_TEST(LinalgTest, PolyFromRootsExpandsTheProduct){
     EXPECT_EQ(poly_from_roots(TestFixture::vector({1, 2}), 4), TestFixture::vector({2, -3, 1, 0, 0}));
     EXPECT_EQ(poly_from_roots(V{}, 2), TestFixture::vector({1, 0, 0}));
     EXPECT_THROW((void)poly_from_roots(TestFixture::vector({1, 2, 3}), 2), ShapeError);
+    EXPECT_THROW((void)poly_from_roots(V{}, std::numeric_limits<std::size_t>::max()), ShapeError);
 }
 
 TYPED_TEST(LinalgTest, ProductsTransposeAndConcatenation){
@@ -56,6 +59,7 @@ TYPED_TEST(LinalgTest, ProductsTransposeAndConcatenation){
     EXPECT_EQ(TestFixture::vector({5, 6}) * a, TestFixture::vector({23, 34}));
     const auto wide = TestFixture::matrix({{1, 2, 3}, {4, 5, 6}});
     EXPECT_EQ(TestFixture::vector({1, 2}) * wide, TestFixture::vector({9, 12, 15}));
+    EXPECT_EQ(wide * wide.transpose(), TestFixture::matrix({{14, 32}, {32, 77}}));
     EXPECT_EQ(a * Z(2), TestFixture::matrix({{2, 4}, {6, 8}}));
     EXPECT_EQ(Z(3) * a, TestFixture::matrix({{3, 6}, {9, 12}}));
     EXPECT_EQ(a.transpose(), TestFixture::matrix({{1, 3}, {2, 4}}));
@@ -101,6 +105,7 @@ TYPED_TEST(LinalgTest, ShapesAreValidated){
 
     EXPECT_THROW(M(0, 2), ShapeError);
     EXPECT_THROW(M(2, 0), ShapeError);
+    EXPECT_THROW(M(std::size_t{1} << 32, std::size_t{1} << 32), ShapeError);
     EXPECT_THROW((void)M::from_rows({V(2), V(3)}), ShapeError);
     EXPECT_THROW((void)(wide * wide), ShapeError);
     EXPECT_THROW((void)(wide * TestFixture::vector({1, 2})), ShapeError);

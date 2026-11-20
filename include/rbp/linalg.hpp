@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <limits>
 #include <optional>
 #include <stdexcept>
 #include <type_traits>
@@ -82,6 +83,7 @@ namespace rbp{
     template <class C>
     [[nodiscard]] Vector<C> poly_from_roots(const Vector<C>& roots, const std::size_t degree){
         if (roots.size() > degree) throw ShapeError("poly_from_roots needs degree >= number of roots");
+        if (degree == std::numeric_limits<std::size_t>::max()) throw ShapeError("poly_from_roots degree is too large");
         Vector<C> coefficients(degree + 1);
         coefficients.front() = 1;
         for (std::size_t n = 0; n < roots.size(); ++n){
@@ -103,9 +105,7 @@ namespace rbp{
     template <class C>
     class Matrix{
     public:
-        Matrix(const std::size_t rows, const std::size_t cols) : rows_(rows), cols_(cols), data_(rows * cols){
-            if (rows == 0 || cols == 0) throw ShapeError("a matrix needs at least one row and one column");
-        }
+        Matrix(const std::size_t rows, const std::size_t cols) : rows_(rows), cols_(cols), data_(checked_size(rows, cols)){}
 
         [[nodiscard]] static Matrix from_rows(const std::vector<Vector<C>>& rows){
             Matrix m(rows.size(), rows.empty() ? 0 : rows.front().size());
@@ -206,6 +206,12 @@ namespace rbp{
         }
 
     private:
+        [[nodiscard]] static std::size_t checked_size(const std::size_t rows, const std::size_t cols){
+            if (rows == 0 || cols == 0) throw ShapeError("a matrix needs at least one row and one column");
+            if (cols > std::numeric_limits<std::size_t>::max() / rows) throw ShapeError("a matrix has too many entries");
+            return rows * cols;
+        }
+
         [[nodiscard]] std::size_t index(const std::size_t i, const std::size_t j) const{
             if (i >= rows_ || j >= cols_) throw std::out_of_range("matrix index outside its rows or columns");
             return i * cols_ + j;

@@ -18,7 +18,6 @@ namespace rbp{
     Zp<C> Zp<C>::from_unsigned(const std::uint64_t value){
         Zp r;
         bn_set_dig(raw(r), value);
-        bn_mod(raw(r), raw(r), order<C>());
         return r;
     }
 

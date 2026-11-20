@@ -106,4 +106,10 @@ TYPED_TEST(PairingTest, PreparedPairingSkipsIdentitiesAndChecksShape){
     EXPECT_THROW((void)pair(std::vector(ps.begin(), ps.begin() + 3), prepared), ShapeError);
     ps.push_back(G1<C>::random());
     EXPECT_THROW((void)pair(ps, prepared), ShapeError);
+
+    PreparedG2 reassigned(qs);
+    PairingProduct<C> product;
+    product.add(std::vector(ps.begin(), ps.begin() + 4), reassigned);
+    reassigned = PreparedG2(std::vector<G2<C>>{});
+    EXPECT_THROW((void)product.evaluate(), ShapeError);
 }

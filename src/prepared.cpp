@@ -273,6 +273,7 @@ namespace rbp{
             loop.variable.push_back(line_stepper(p, raw(qs_[i])));
         }
         for (const auto& term : prepared_){
+            require_one_g2_per_g1(term.ps.size(), detail::Raw::points(*term.qs).size());
             auto source = line_source(term.ps, *term.qs);
             if (!source.active.empty()) loop.prepared.push_back(std::move(source));
         }
@@ -298,6 +299,7 @@ namespace rbp{
         auto qs = qs_;
         for (const auto& term : prepared_){
             const auto& points = detail::Raw::points(*term.qs);
+            require_one_g2_per_g1(term.ps.size(), points.size());
             ps.insert(ps.end(), term.ps.begin(), term.ps.end());
             qs.insert(qs.end(), points.begin(), points.end());
         }
