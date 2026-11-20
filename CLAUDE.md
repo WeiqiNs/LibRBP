@@ -7,9 +7,10 @@ subproject `PROJECT_IS_TOP_LEVEL` is false, so tests are off and the build type 
 
 ## Commands
 
-CI (`.github/workflows/ci.yml`) installs `build-essential cmake git libgmp-dev libgtest-dev`, plus `lcov` in the
-coverage job. Configure fetches RELIC at `RBP_RELIC_GIT_TAG` and configures one RELIC per curve under
-`<build>/relic/<curve>`, so the first is slow.
+Linux only: CMake 3.25+, a C++20 compiler, GMP, git and binutils (`nm`, `readelf`, used by ctest); GoogleTest is
+fetched when not installed. CI (`.github/workflows/ci.yml`) installs `build-essential cmake git libgmp-dev
+libgtest-dev`, plus `lcov` in the coverage job. Configure fetches RELIC at `RBP_RELIC_GIT_TAG` and configures one RELIC
+per curve under `<build>/relic/<curve>`, so the first is slow. There is no linter or formatter configuration.
 
 ```bash
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DRBP_ENABLE_COVERAGE=ON      # coverage job
@@ -28,7 +29,8 @@ TSAN_OPTIONS=halt_on_error=1 ctest --test-dir build --output-on-failure
 
 Locally use one build directory per configuration; without root, install with `--prefix <dir>` and configure the demo
 with `-DCMAKE_PREFIX_PATH=<dir>`. CI lowers `vm.mmap_rnd_bits` to 28 before TSan, and its Codecov upload needs GitHub
-OIDC. lcov must match the gcov of the compiler that built `build/`.
+OIDC. lcov must match the gcov of the compiler that built `build/`. `docker build -t librbp .` (`Dockerfile`) runs the
+package job's steps in a container.
 
 ## Layout
 
@@ -71,8 +73,9 @@ OIDC. lcov must match the gcov of the compiler that built `build/`.
 - The fetched RELIC is never edited: `rbp_build_relic` builds from a symlink view whose `src/relic_core.c` makes
   `first_ctx` an ordinary global (configure fails if that line moves), so threads that never use a curve reserve no
   context; ctest `thread_local_storage` bounds static TLS. RELIC is reconfigured only when its fingerprint changes:
-  options, compiler, sanitizer flags, RELIC commit, RELIC's configure inputs and `cmake/RBPRelic.cmake` itself; a RELIC
-  source file added without any of those changing is missed.
+  options, compiler, sanitizer flags, RELIC commit, RELIC's configure inputs and file list, the patched core and
+  `cmake/RBPRelic.cmake` itself. The file list covers only RELIC's top level and `src/*`, so a file added deeper (say
+  under `src/bn/`) without a commit change is missed.
 - `detail::Runtime<C>` is the only `core_set` caller: the first thread keeps `first_ctx`; others get a heap context via
   `core_set_thread_initializer`, owned by a pthread key and freed after `thread_local` destructors. `seed<C>` reseeds
   only the calling thread. Pinned by `test_runtime.cpp`, `test_thread_keys.cpp`, `test_concurrency.cpp`.
@@ -80,7 +83,7 @@ OIDC. lcov must match the gcov of the compiler that built `build/`.
   length, `Zp` range and subgroup membership (`DecodeError`); shape mismatches throw `ShapeError`. Pinned by
   `DecodingRejectsInvalidEncodings` and `EncodingIsFixedWidthBigEndianAndValidated`.
 - `Zp::hash` is `md_xmd` with the domain as DST; `Point::hash` adds a side byte so `G1` and `G2` hash apart even on
-  symmetric curves. The fixtures' known answers pin both encodings.
+  symmetric curves. The fixtures' known answers pin both hashes.
 - On embedding-degree-12 curves `src/prepared.cpp` replays RELIC's optimal-ate Miller loop: `MillerSchedule::walk`
   drives both `PreparedG2` line storage and `PairingProduct` evaluation, one loop and final exponentiation in total.
   Other curves use `pc_map_sim` in `detail::batch_size` chunks. Pinned by `PairingTest`; its batch cases and
