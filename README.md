@@ -33,8 +33,9 @@ encryption, functional encryption and zk-SNARKs are built on, and the groups `G1
   single RELIC build cannot offer.
 - **Thread-safe on top of a single-threaded C library.** Each thread gets a RELIC context the first time it touches a
   curve, and threads that never do pay nothing. CI runs the suite under ThreadSanitizer with RELIC instrumented too.
-- **Fast repeated pairings.** `PreparedG2` stores a fixed key's Miller-loop lines once, and `PairingProduct` evaluates
-  any mix of plain and prepared pairs in one shared Miller loop with one final exponentiation.
+- **Fast repeated pairings.** On BLS12-381 and BN254, `PreparedG2` stores a fixed key's Miller-loop lines once, and
+  `PairingProduct` evaluates any mix of plain and prepared pairs in one shared Miller loop with one final
+  exponentiation.
 - **Safe at the boundary.** Every decode checks length and subgroup membership, and errors are typed (`ShapeError`,
   `DecodeError`, `NotInvertible`, `RelicError`).
 - **100% line coverage**, plus CI checks that no RELIC symbol leaks from a library and that a library rebuilt with a
